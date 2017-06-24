@@ -3,7 +3,7 @@
 OTA="http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=5
+TOOL_VERSION=6
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
@@ -59,7 +59,11 @@ function searchDownloadURL(){
 		if [[ -f "/tmp/$PROJECT_DIR/catalog.xml" ]]; then
 			rm "/tmp/$PROJECT_DIR/catalog.xml"
 		fi
-		curl -s -o "/tmp/$PROJECT_DIR/catalog.xml" "$URL" 
+		curl -s -o "/tmp/$PROJECT_DIR/catalog.xml" "$URL"
+		if [[ ! -f "/tmp/$PROJECT_DIR/catalog.xml" ]]; then
+			echo "ERROR : Failed to download."
+			quitTool 1
+		fi
 		parseStage1
 		if [[ ! -z "$DOWNLOAD_URL" ]]; then
 			break
