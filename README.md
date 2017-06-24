@@ -2,7 +2,7 @@
 
 # darksun
 
-get whole iOS system easily
+get whole iOS system
 
 Only works with latest iOS version including beta. Not for old iOS.
 

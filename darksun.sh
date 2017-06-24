@@ -3,10 +3,10 @@
 OTA="http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=4
+TOOL_VERSION=5
 
 function showHelpMessage(){
-	echo "darksun: get whole iOS system easily (Version : $TOOL_VERSION)"
+	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
 	echo "Usage: ./darksun.sh [options...]"
 	echo "Options:"
 	echo "-n	internal device name (See https://www.theiphonewiki.com/wiki/Models)"
