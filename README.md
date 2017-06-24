@@ -4,7 +4,7 @@ get whole iOS system easily
 
 Only works with latest iOS version including beta. Not for old iOS.
 
-darkson uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires libarchive to run.
+darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires libarchive to run.
 
 ## Usage
 
