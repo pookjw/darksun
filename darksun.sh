@@ -3,7 +3,7 @@
 OTA="http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=6
+TOOL_VERSION=7
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
@@ -166,6 +166,15 @@ function extractUpdate(){
 	fi
 	if [[ -f "$MODEL-$VERSION.tar" ]]; then
 		rm "$MODEL-$VERSION.tar"
+	fi
+	if [[ -d "$MODEL-$VERSION" ]]; then
+		rm -rf "$MODEL-$VERSION"
+	fi
+	if [[ -d "$MODEL-$VERSION.ota" ]]; then
+		rm -rf "$MODEL-$VERSION.ota"
+	fi
+	if [[ -d "$MODEL-$VERSION.tar" ]]; then
+		rm -rf "$MODEL-$VERSION.tar"
 	fi
 	mv "/tmp/$PROJECT_DIR/extracted/AssetData/payloadv2/payload" "$MODEL-$VERSION"
 	"/tmp/$PROJECT_DIR/ota2tar/src/ota2tar" "$MODEL-$VERSION"
