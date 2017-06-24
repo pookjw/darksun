@@ -3,8 +3,7 @@
 OTA="http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=3
-CLEAN_FILES=YES
+TOOL_VERSION=4
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system easily (Version : $TOOL_VERSION)"
@@ -127,8 +126,9 @@ function showSummary(){
 	showLines "*"
 	echo "Summary"
 	showLines "-"
+	echo "Tool version : $TOOL_VERSION"
 	echo "Device name : $MODEL"
-	echo "iOS Version : $VERSION (9.9.$VERSION)"
+	echo "iOS version : $VERSION (9.9.$VERSION)"
 	echo "Update URL : $DOWNLOAD_URL"
 	echo "Output : $OUTPUT_DIRECTORY"
 	showLines "*"
@@ -154,20 +154,20 @@ function extractUpdate(){
 	echo "Extracting..."
 	unzip -qq -o -d "/tmp/$PROJECT_DIR/extracted" "/tmp/$PROJECT_DIR/update.zip"
 	cd "$OUTPUT_DIRECTORY"
-	if [[ -f payload ]]; then
-		rm payload
+	if [[ -f "$MODEL-$VERSION" ]]; then
+		rm "$MODEL-$VERSION"
 	fi
-	if [[ -f payload.ota ]]; then
-		rm payload.ota
+	if [[ -f "$MODEL-$VERSION.ota" ]]; then
+		rm "$MODEL-$VERSION.ota"
 	fi
-	if [[ -f payload.tar ]]; then
-		rm payload.tar
+	if [[ -f "$MODEL-$VERSION.tar" ]]; then
+		rm "$MODEL-$VERSION.tar"
 	fi
-	mv "/tmp/$PROJECT_DIR/extracted/AssetData/payloadv2/payload" .
-	"/tmp/$PROJECT_DIR/ota2tar/src/ota2tar" payload
-	if [[ -f payload.tar ]]; then
-		rm payload
-		echo "Success! Check $OUTPUT_DIRECTORY/payload.tar"
+	mv "/tmp/$PROJECT_DIR/extracted/AssetData/payloadv2/payload" "$MODEL-$VERSION"
+	"/tmp/$PROJECT_DIR/ota2tar/src/ota2tar" "$MODEL-$VERSION"
+	if [[ -f "$MODEL-$VERSION.tar" ]]; then
+		rm "$MODEL-$VERSION"
+		echo "Success! Check $OUTPUT_DIRECTORY/$MODEL-$VERSION.tar"
 		quitTool 0
 	else
 		echo "ERROR!"
@@ -188,9 +188,7 @@ function showLines(){
 }
 
 function quitTool(){
-	if [[ "$CLEAN_FILES" == YES ]]; then
-		rm -rf "/tmp/$PROJECT_DIR"
-	fi
+	rm -rf "/tmp/$PROJECT_DIR"
 	exit "$1"
 }
 
