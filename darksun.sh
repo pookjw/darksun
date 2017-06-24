@@ -3,8 +3,8 @@
 OTA="http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=1
-CLEAN_FILES=NO
+TOOL_VERSION=2
+CLEAN_FILES=YES
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system easily (Version : $TOOL_VERSION)"
@@ -13,7 +13,7 @@ function showHelpMessage(){
 	echo "-n	internal device name (See https://www.theiphonewiki.com/wiki/Models)"
 	echo "-v	iOS version"
 	echo "example) ./darksun.sh -n N102AP -v 11.0"
-	quitTool 1
+	exit 1
 }
 
 function setDestination(){
@@ -37,7 +37,7 @@ function setDestination(){
 	OUTPUT_DIRECTORY="$(pwd)"
 	if [[ ! -d "$OUTPUT_DIRECTORY" ]]; then
 		echo "$OUTPUT_DIRECTORY: : No such file or directory"
-		quitTool 1
+		exit 1
 	fi
 }
 
@@ -132,8 +132,6 @@ function showSummary(){
 	echo "Update URL : $DOWNLOAD_URL"
 	echo "Output : $OUTPUT_DIRECTORY"
 	showLines "*"
-	read -s -n 1 -p "Press any key to continue..."
-	echo
 }
 
 function downloadUpdate(){
@@ -155,16 +153,20 @@ function extractUpdate(){
 	mkdir "/tmp/$PROJECT_DIR/extracted"
 	echo "Extracting..."
 	unzip -qq -o -d "/tmp/$PROJECT_DIR/extracted" "/tmp/$PROJECT_DIR/update.zip"
-	mv "/tmp/$PROJECT_DIR/extracted/AssetData/payloadv2/payload" "$OUTPUT_DIRECTORY"
 	cd "$OUTPUT_DIRECTORY"
+	if [[ -f payload ]]; then
+		rm payload
+	fi
 	if [[ -f payload.ota ]]; then
 		rm payload.ota
 	fi
 	if [[ -f payload.tar ]]; then
 		rm payload.tar
 	fi
+	mv "/tmp/$PROJECT_DIR/extracted/AssetData/payloadv2/payload" .
 	"/tmp/$PROJECT_DIR/ota2tar/src/ota2tar" payload
 	if [[ -f payload.tar ]]; then
+		rm payload
 		echo "Success! Check $OUTPUT_DIRECTORY/payload.tar"
 		quitTool 0
 	else
