@@ -3,7 +3,7 @@
 OTA="http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=2
+TOOL_VERSION=3
 CLEAN_FILES=YES
 
 function showHelpMessage(){
@@ -72,13 +72,6 @@ function searchDownloadURL(){
 	fi
 }
 
-function parseStage2(){
-	cat "/tmp/$PROJECT_DIR/catalog.xml" | grep "			<string>9.9.$VERSION</string>
-				<string>$MODEL</string>
-			<string>http://appldnld.apple.com/
-\.zip</string>"
-}
-
 function parseStage1(){
 	COUNT=0
 	for VALUE in $(parseStage2); do
@@ -105,6 +98,13 @@ function parseStage1(){
 			break
 		fi
 	done
+}
+
+function parseStage2(){
+	cat "/tmp/$PROJECT_DIR/catalog.xml" | grep "			<string>9.9.$VERSION</string>
+				<string>$MODEL</string>
+			<string>http://appldnld.apple.com/
+\.zip</string>"
 }
 
 function buildBinary(){
