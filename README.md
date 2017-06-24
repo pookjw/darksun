@@ -12,5 +12,4 @@ darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires lib
 	Options:
 	-n	internal device name (See https://www.theiphonewiki.com/wiki/Models)
 	-v	iOS version
-	-o	output folder (default: current directory)
 	example) ./darksun.sh -n N102AP -v 11.0
