@@ -4,7 +4,7 @@
 
 get whole iOS system
 
-Only works with latest iOS version including beta. Not for old iOS.
+Only works with latest iOS version including beta. Not for old iOS. Works with iOS 10 or later.
 
 Tested on macOS.
 
