@@ -3,7 +3,8 @@
 OTA="http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=7
+TOOL_VERSION=8
+VERBOSE=NO
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
@@ -43,11 +44,14 @@ function setDestination(){
 function setProjectPath(){
 	COUNT=0
 	while(true); do
-		if [[ -d "/tmp/$COUNT" ]]; then
+		if [[ -d "/tmp/darksun/$COUNT" ]]; then
 			COUNT=$((COUNT+1))
 		else
-			mkdir "/tmp/$COUNT"
-			PROJECT_DIR="$COUNT"
+			mkdir -p "/tmp/darksun/$COUNT"
+			PROJECT_DIR="/tmp/darksun/$COUNT"
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "Temp folder : $PROJECT_DIR"
+			fi
 			break
 		fi
 	done
@@ -56,11 +60,16 @@ function setProjectPath(){
 function searchDownloadURL(){
 	echo "Searching..."
 	for URL in $OTA; do
-		if [[ -f "/tmp/$PROJECT_DIR/catalog.xml" ]]; then
-			rm "/tmp/$PROJECT_DIR/catalog.xml"
+		if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
+			rm "$PROJECT_DIR/catalog.xml"
 		fi
-		curl -s -o "/tmp/$PROJECT_DIR/catalog.xml" "$URL"
-		if [[ ! -f "/tmp/$PROJECT_DIR/catalog.xml" ]]; then
+		if [[ "$VERBOSE" == YES ]]; then
+			echo "Downloading $URL"
+			curl -o "$PROJECT_DIR/catalog.xml" "$URL"
+		else
+			curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+		fi
+		if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
 			echo "ERROR : Failed to download."
 			quitTool 1
 		fi
@@ -78,6 +87,9 @@ function searchDownloadURL(){
 function parseStage1(){
 	COUNT=0
 	for VALUE in $(parseStage2); do
+		if [[ "$VERBOSE" == YES ]]; then
+			echo "$VALUE"
+		fi
 		if [[ "$COUNT" == 3 ]]; then
 			SECONT_URL="$(echo $VALUE | cut -d">" -f2 | cut -d"<" -f1)"
 		fi
@@ -104,18 +116,29 @@ function parseStage1(){
 }
 
 function parseStage2(){
-	cat "/tmp/$PROJECT_DIR/catalog.xml" | grep "			<string>9.9.$VERSION</string>
+	cat "$PROJECT_DIR/catalog.xml" | grep "			<string>9.9.$VERSION</string>
 				<string>$MODEL</string>
 			<string>http://appldnld.apple.com/
 \.zip</string>"
 }
 
+function showSummary(){
+	showLines "*"
+	echo "Summary"
+	showLines "-"
+	echo "Device name : $MODEL"
+	echo "iOS version : $VERSION (9.9.$VERSION)"
+	echo "Update URL : $DOWNLOAD_URL"
+	echo "Output : $OUTPUT_DIRECTORY"
+	showLines "*"
+}
+
 function buildBinary(){
 	echo "Building ota2tar... (https://github.com/emonti/ota2tar)"
-	if [[ -d "/tmp/$PROJECT_DIR/ota2tar" ]]; then
-		rm -rf "/tmp/$PROJECT_DIR/ota2tar"
+	if [[ -d "$PROJECT_DIR/ota2tar" ]]; then
+		rm -rf "$PROJECT_DIR/ota2tar"
 	fi
-	cd "/tmp/$PROJECT_DIR"
+	cd "$PROJECT_DIR"
 	# See https://github.com/emonti/ota2tar
 	git clone https://github.com/emonti/ota2tar
 	cd ota2tar/src
@@ -126,37 +149,29 @@ function buildBinary(){
 	fi
 }
 
-function showSummary(){
-	showLines "*"
-	echo "Summary"
-	showLines "-"
-	echo "Tool version : $TOOL_VERSION"
-	echo "Device name : $MODEL"
-	echo "iOS version : $VERSION (9.9.$VERSION)"
-	echo "Update URL : $DOWNLOAD_URL"
-	echo "Output : $OUTPUT_DIRECTORY"
-	showLines "*"
-}
-
 function downloadUpdate(){
-	if [[ -f "/tmp/$PROJECT_DIR/update.zip" ]]; then
-		rm "/tmp/$PROJECT_DIR/update.zip"
+	if [[ -f "$PROJECT_DIR/update.zip" ]]; then
+		rm "$PROJECT_DIR/update.zip"
 	fi
 	echo "Downloading update file..."
-	curl -s -o "/tmp/$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
-	if [[ ! -f "/tmp/$PROJECT_DIR/update.zip" ]]; then
+	if [[ "$VERBOSE" == YES ]]; then
+		curl -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+	else
+		curl -# -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+	fi
+	if [[ ! -f "$PROJECT_DIR/update.zip" ]]; then
 		echo "ERROR : Can't download update file."
 		quitTool 1
 	fi
 }
 
 function extractUpdate(){
-	if [[ -d "/tmp/$PROJECT_DIR/extracted" ]]; then
-		rm -rf "/tmp/$PROJECT_DIR/extracted"
+	echo "Extracting... (1)"
+	if [[ "$VERBOSE" == YES ]]; then
+		unzip -o -j -d "$PROJECT_DIR" "$PROJECT_DIR/update.zip" "AssetData/payloadv2/payload"
+	else
+		unzip -qq -o -j -d "$PROJECT_DIR" "$PROJECT_DIR/update.zip" "AssetData/payloadv2/payload"
 	fi
-	mkdir "/tmp/$PROJECT_DIR/extracted"
-	echo "Extracting..."
-	unzip -qq -o -d "/tmp/$PROJECT_DIR/extracted" "/tmp/$PROJECT_DIR/update.zip"
 	cd "$OUTPUT_DIRECTORY"
 	if [[ -f "$MODEL-$VERSION" ]]; then
 		rm "$MODEL-$VERSION"
@@ -176,8 +191,9 @@ function extractUpdate(){
 	if [[ -d "$MODEL-$VERSION.tar" ]]; then
 		rm -rf "$MODEL-$VERSION.tar"
 	fi
-	mv "/tmp/$PROJECT_DIR/extracted/AssetData/payloadv2/payload" "$MODEL-$VERSION"
-	"/tmp/$PROJECT_DIR/ota2tar/src/ota2tar" "$MODEL-$VERSION"
+	mv "$PROJECT_DIR/payload" "$MODEL-$VERSION"
+	echo "Extracting... (2)"
+	"$PROJECT_DIR/ota2tar/src/ota2tar" "$MODEL-$VERSION"
 	if [[ -f "$MODEL-$VERSION.tar" ]]; then
 		rm "$MODEL-$VERSION"
 		echo "Success! Check $OUTPUT_DIRECTORY/$MODEL-$VERSION.tar"
@@ -201,7 +217,7 @@ function showLines(){
 }
 
 function quitTool(){
-	rm -rf "/tmp/$PROJECT_DIR"
+	rm -rf "$PROJECT_DIR"
 	exit "$1"
 }
 
