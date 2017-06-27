@@ -1,10 +1,11 @@
 #!/bin/sh
 
-OTA="http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+DB_OTA="https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=8
-VERBOSE=NO
+PB_OTA="http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+TOOL_VERSION=9
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
@@ -12,6 +13,7 @@ function showHelpMessage(){
 	echo "Options:"
 	echo "-n	internal device name (See https://www.theiphonewiki.com/wiki/Models)"
 	echo "-v	iOS version"
+	echo "-p	get Public Beta Firmware (default : Public Release (GM), Developer Beta)"
 	echo "example) ./darksun.sh -n N102AP -v 11.0"
 	exit 1
 }
@@ -20,17 +22,62 @@ function setDestination(){
 	if [[ "$1" == -n ]]; then
 		MODEL="$2"
 	fi
+	if [[ "$2" == -n ]]; then
+		MODEL="$3"
+	fi
 	if [[ "$3" == -n ]]; then
 		MODEL="$4"
+	fi
+	if [[ "$4" == -n ]]; then
+		MODEL="$5"
+	fi
+	if [[ "$5" == -n ]]; then
+		MODEL="$6"
+	fi
+	if [[ "$6" == -n ]]; then
+		MODEL="$7"
+	fi
+	if [[ "$7" == -n ]]; then
+		MODEL="$8"
+	fi
+	if [[ "$8" == -n ]]; then
+		MODEL="$9"
 	fi
 
 	if [[ "$1" == -v ]]; then
 		VERSION="$2"
 	fi
+	if [[ "$2" == -v ]]; then
+		VERSION="$3"
+	fi
 	if [[ "$3" == -v ]]; then
 		VERSION="$4"
 	fi
+	if [[ "$4" == -v ]]; then
+		VERSION="$5"
+	fi
+	if [[ "$5" == -v ]]; then
+		VERSION="$6"
+	fi
+	if [[ "$6" == -v ]]; then
+		VERSION="$7"
+	fi
+	if [[ "$7" == -v ]]; then
+		VERSION="$8"
+	fi
+	if [[ "$8" == -v ]]; then
+		VERSION="$9"
+	fi
 
+	if [[ "$1" == "-p" || "$2" == "-p" || "$3" == "-p" || "$4" == "-p" || "$5" == "-p" || "$6" == "-p" || "$7" == "-p" || "$8" == "-p" || "$9" == "-p" ]]; then
+		DOWNLOAD_PUBLIC_BETA=YES
+	fi
+	if [[ "$1" == "-verbose" || "$2" == "-verbose" || "$3" == "-verbose" || "$4" == "-verbose" || "$5" == "-verbose" || "$6" == "-verbose" || "$7" == "-verbose" || "$8" == "-verbose" || "$9" == "-verbose" ]]; then
+		VERBOSE=YES
+	fi
+	if [[ "$1" == "-searchOnly" || "$2" == "-searchOnly" || "$3" == "-searchOnly" || "$4" == "-searchOnly" || "$5" == "-searchOnly" || "$6" == "-searchOnly" || "$7" == "-searchOnly" || "$8" == "-searchOnly" || "$9" == "-searchOnly" ]]; then
+		searchOnly=YES
+	fi
 	if [[ -z "$MODEL" || -z "$VERSION" ]]; then
 		showHelpMessage
 	fi
@@ -58,26 +105,49 @@ function setProjectPath(){
 }
 
 function searchDownloadURL(){
-	echo "Searching..."
-	for URL in $OTA; do
-		if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
-			rm "$PROJECT_DIR/catalog.xml"
-		fi
-		if [[ "$VERBOSE" == YES ]]; then
-			echo "Downloading $URL"
-			curl -o "$PROJECT_DIR/catalog.xml" "$URL"
-		else
-			curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
-		fi
-		if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
-			echo "ERROR : Failed to download."
-			quitTool 1
-		fi
-		parseStage1
-		if [[ ! -z "$DOWNLOAD_URL" ]]; then
-			break
-		fi
-	done
+	if [[ "$DOWNLOAD_PUBLIC_BETA" == YES ]]; then
+		echo "Searching... (Public Beta)"
+		for URL in $PB_OTA; do
+			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
+				rm "$PROJECT_DIR/catalog.xml"
+			fi
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "Downloading $URL"
+				curl -o "$PROJECT_DIR/catalog.xml" "$URL"
+			else
+				curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+			fi
+			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
+				echo "ERROR : Failed to download."
+				quitTool 1
+			fi
+			parseStage1
+			if [[ ! -z "$DOWNLOAD_URL" ]]; then
+				break
+			fi
+		done
+	else
+		echo "Searching..."
+		for URL in $GM_OTA $DB_OTA; do
+			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
+				rm "$PROJECT_DIR/catalog.xml"
+			fi
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "Downloading $URL"
+				curl -o "$PROJECT_DIR/catalog.xml" "$URL"
+			else
+				curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+			fi
+			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
+				echo "ERROR : Failed to download."
+				quitTool 1
+			fi
+			parseStage1
+			if [[ ! -z "$DOWNLOAD_URL" ]]; then
+				break
+			fi
+		done
+	fi
 	if [[ -z "$DOWNLOAD_URL" ]]; then
 		echo "$MODEL | $VERSION not found."
 		quitTool 1
@@ -90,23 +160,46 @@ function parseStage1(){
 		if [[ "$VERBOSE" == YES ]]; then
 			echo "$VALUE"
 		fi
-		if [[ "$COUNT" == 3 ]]; then
+		if [[ "$COUNT" == 4 ]]; then
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "Great."
+			fi
 			SECONT_URL="$(echo $VALUE | cut -d">" -f2 | cut -d"<" -f1)"
 		fi
-		if [[ "$COUNT" == 2 ]]; then
+		if [[ "$COUNT" == 3 ]]; then
 			FIRST_URL="$(echo $VALUE | cut -d">" -f2 | cut -d"<" -f1)"
-			COUNT=3
-			FINAL_LOOP=YES
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "4"
+			fi
+			COUNT=4
+			DO_NOT_RESET=YES
 		fi
-		if [[ "$VALUE" == "<string>$MODEL</string>" && "$COUNT" == 1 ]]; then
-			COUNT=2
+		if [[ "$VALUE" == "<string>$MODEL</string>" && "$COUNT" == 2 ]]; then
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "3"
+			fi
+			COUNT=3
 		else
-			if [[ ! "$FINAL_LOOP" == YES ]]; then
+			if [[ ! "$DO_NOT_RESET" == YES ]]; then
 				COUNT=0
+				BUILD_NAME=
+				DO_NOT_RESET=
 			fi
 		fi
+		if [[ "$COUNT" == 1 ]]; then
+			BUILD_NAME="$(echo $VALUE | cut -d">" -f2 | cut -d"<" -f1)"
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "2"
+			fi
+			COUNT=2
+			DO_NOT_RESET=
+		fi
 		if [[ "$VALUE" == "<string>9.9.$VERSION</string>" && "$COUNT" == 0 ]]; then
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "1"
+			fi
 			COUNT=1
+			DO_NOT_RESET=YES
 		fi
 		if [[ ! -z "$FIRST_URL" && ! -z "$SECONT_URL" ]]; then
 			DOWNLOAD_URL="$FIRST_URL$SECONT_URL"
@@ -117,6 +210,7 @@ function parseStage1(){
 
 function parseStage2(){
 	cat "$PROJECT_DIR/catalog.xml" | grep "			<string>9.9.$VERSION</string>
+			<string>iOS1
 				<string>$MODEL</string>
 			<string>http://appldnld.apple.com/
 \.zip</string>"
@@ -127,7 +221,7 @@ function showSummary(){
 	echo "Summary"
 	showLines "-"
 	echo "Device name : $MODEL"
-	echo "iOS version : $VERSION (9.9.$VERSION)"
+	echo "iOS version : $VERSION ($BUILD_NAME)"
 	echo "Update URL : $DOWNLOAD_URL"
 	echo "Output : $OUTPUT_DIRECTORY"
 	showLines "*"
@@ -173,30 +267,30 @@ function extractUpdate(){
 		unzip -qq -o -j -d "$PROJECT_DIR" "$PROJECT_DIR/update.zip" "AssetData/payloadv2/payload"
 	fi
 	cd "$OUTPUT_DIRECTORY"
-	if [[ -f "$MODEL-$VERSION" ]]; then
-		rm "$MODEL-$VERSION"
+	if [[ -f "$BUILD_NAME ($MODEL)" ]]; then
+		rm "$BUILD_NAME ($MODEL)"
 	fi
-	if [[ -f "$MODEL-$VERSION.ota" ]]; then
-		rm "$MODEL-$VERSION.ota"
+	if [[ -f "$BUILD_NAME ($MODEL).ota" ]]; then
+		rm "$BUILD_NAME ($MODEL).ota"
 	fi
-	if [[ -f "$MODEL-$VERSION.tar" ]]; then
-		rm "$MODEL-$VERSION.tar"
+	if [[ -f "$BUILD_NAME ($MODEL).tar" ]]; then
+		rm "$BUILD_NAME ($MODEL).tar"
 	fi
-	if [[ -d "$MODEL-$VERSION" ]]; then
-		rm -rf "$MODEL-$VERSION"
+	if [[ -d "$BUILD_NAME ($MODEL)" ]]; then
+		rm -rf "$BUILD_NAME ($MODEL)"
 	fi
-	if [[ -d "$MODEL-$VERSION.ota" ]]; then
-		rm -rf "$MODEL-$VERSION.ota"
+	if [[ -d "$BUILD_NAME ($MODEL).ota" ]]; then
+		rm -rf "$BUILD_NAME ($MODEL).ota"
 	fi
-	if [[ -d "$MODEL-$VERSION.tar" ]]; then
-		rm -rf "$MODEL-$VERSION.tar"
+	if [[ -d "$BUILD_NAME ($MODEL).tar" ]]; then
+		rm -rf "$BUILD_NAME ($MODEL).tar"
 	fi
-	mv "$PROJECT_DIR/payload" "$MODEL-$VERSION"
+	mv "$PROJECT_DIR/payload" "$BUILD_NAME ($MODEL)"
 	echo "Extracting... (2)"
-	"$PROJECT_DIR/ota2tar/src/ota2tar" "$MODEL-$VERSION"
-	if [[ -f "$MODEL-$VERSION.tar" ]]; then
-		rm "$MODEL-$VERSION"
-		echo "Success! Check $OUTPUT_DIRECTORY/$MODEL-$VERSION.tar"
+	"$PROJECT_DIR/ota2tar/src/ota2tar" "$BUILD_NAME ($MODEL)"
+	if [[ -f "$BUILD_NAME ($MODEL).tar" ]]; then
+		rm "$BUILD_NAME ($MODEL)"
+		echo "Success! Check $OUTPUT_DIRECTORY/$BUILD_NAME ($MODEL).tar"
 		quitTool 0
 	else
 		echo "ERROR!"
@@ -227,6 +321,9 @@ setDestination "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 setProjectPath
 searchDownloadURL
 showSummary
-buildBinary
-downloadUpdate
-extractUpdate
+if [[ ! "$searchOnly" == YES ]]; then
+	buildBinary
+	downloadUpdate
+	extractUpdate
+fi
+
