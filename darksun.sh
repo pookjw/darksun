@@ -1,11 +1,15 @@
 #!/bin/sh
 
 GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-DB_OTA="https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-PB_OTA="http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=11
+# DB OTA
+# 1. 
+DB_OTA="https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/seed-R40.Subdivide/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/seed-R40.2112/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+TOOL_VERSION=12
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
@@ -105,8 +109,8 @@ function setProjectPath(){
 }
 
 function searchDownloadURL(){
+	echo "Searching... (will take a long time)"
 	if [[ "$DOWNLOAD_PUBLIC_BETA" == YES ]]; then
-		echo "Searching... (Public Beta)"
 		for URL in $PB_OTA; do
 			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
 				rm "$PROJECT_DIR/catalog.xml"
@@ -121,13 +125,12 @@ function searchDownloadURL(){
 				echo "ERROR : Failed to download."
 				quitTool 1
 			fi
-			parseStage1
+			parseAsset
 			if [[ ! -z "$DOWNLOAD_URL" ]]; then
 				break
 			fi
 		done
 	else
-		echo "Searching..."
 		for URL in $GM_OTA $DB_OTA; do
 			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
 				rm "$PROJECT_DIR/catalog.xml"
@@ -142,7 +145,7 @@ function searchDownloadURL(){
 				echo "ERROR : Failed to download."
 				quitTool 1
 			fi
-			parseStage1
+			parseAsset
 			if [[ ! -z "$DOWNLOAD_URL" ]]; then
 				break
 			fi
@@ -154,66 +157,97 @@ function searchDownloadURL(){
 	fi
 }
 
-function parseStage1(){
+function parseAsset(){
+	VALUE=
+	BUILD_NAME=
 	COUNT=0
-	for VALUE in $(parseStage2); do
-		if [[ "$VERBOSE" == YES ]]; then
-			echo "$VALUE"
-		fi
-		if [[ "$COUNT" == 4 ]]; then
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "5 Great."
-			fi
-			SECONT_URL="$(echo $VALUE | cut -d">" -f2 | cut -d"<" -f1)"
-		fi
-		if [[ "$COUNT" == 3 ]]; then
-			FIRST_URL="$(echo $VALUE | cut -d">" -f2 | cut -d"<" -f1)"
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "4"
-			fi
-			COUNT=4
-			DO_NOT_RESET=YES
-		fi
-		if [[ "$VALUE" == "<string>$MODEL</string>" && "$COUNT" == 2 ]]; then
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "3"
-			fi
-			COUNT=3
-		else
-			if [[ ! "$DO_NOT_RESET" == YES ]]; then
-				COUNT=0
-				BUILD_NAME=
-				DO_NOT_RESET=
-			fi
-		fi
-		if [[ "$COUNT" == 1 ]]; then
-			BUILD_NAME="$(echo $VALUE | cut -d">" -f2 | cut -d"<" -f1)"
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "2"
-			fi
-			COUNT=2
-			DO_NOT_RESET=
-		fi
-		if [[ "$VALUE" == "<string>9.9.$VERSION</string>" && "$COUNT" == 0 ]]; then
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "1"
-			fi
-			COUNT=1
-			DO_NOT_RESET=YES
-		fi
-		if [[ ! -z "$FIRST_URL" && ! -z "$SECONT_URL" ]]; then
+	PASS_ONCE_0=NO
+	PASS_ONCE_1=NO
+	PASS_ONCE_2=NO
+	PASS_ONCE_3=NO
+	PASS_ONCE_4=NO
+	PASS_ONCE_5=NO
+	PASS_ONCE_6=NO
+	PASS_ONCE_7=NO
+	PASS_ONCE_8=NO
+	FIRST_URL=
+	SECONT_URL=
+	DOWNLOAD_URL=
+	for VALUE in $(cat "$PROJECT_DIR/catalog.xml"); do
+		if [[ "$PASS_ONCE_8" == YES && "$COUNT" == 3 ]]; then
+			SECONT_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+			PASS_ONCE_8=NO
 			DOWNLOAD_URL="$FIRST_URL$SECONT_URL"
 			break
 		fi
+		if [[ "$VALUE" == "<key>__RelativePath</key>" && "$COUNT" == 3 ]]; then
+			PASS_ONCE_8=YES
+		fi
+		if [[ "$PASS_ONCE_7" == YES && "$COUNT" == 2 ]]; then
+			FIRST_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+			PASS_ONCE_7=NO
+			COUNT=3
+		fi
+		if [[ "$VALUE" == "<key>__BaseURL</key>" && "$COUNT" == 2 ]]; then
+			PASS_ONCE_7=YES
+		fi
+		if [[ "$PASS_ONCE_6" == YES && "$COUNT" == 1 ]]; then
+			if [[ "$VALUE" == "<string>$MODEL</string>" ]]; then
+				COUNT=2
+			else
+				BUILD_NAME=
+				COUNT=0
+			fi
+			PASS_ONCE_6=NO
+		fi
+		if [[ "$PASS_ONCE_5" == YES && "$COUNT" == 1 ]]; then
+			PASS_ONCE_5=NO
+			PASS_ONCE_6=YES
+		fi
+		if [[ "$VALUE" == "<key>SupportedDevices</key>" && "$COUNT" == 1 ]]; then
+			PASS_ONCE_5=YES
+		fi
+		if [[ "$PASS_ONCE_4" == YES && "$COUNT" == 1 ]]; then
+			if [[ "$VALUE" == "<string>$MODEL</string>" ]]; then
+				COUNT=2
+			fi
+			PASS_ONCE_4=NO
+		fi
+		if [[ "$PASS_ONCE_3" == YES && "$COUNT" == 1 ]]; then
+			PASS_ONCE_3=NO
+			PASS_ONCE_4=YES
+		fi
+		if [[ "$VALUE" == "<key>SupportedDeviceModels</key>" && "$COUNT" == 1 ]]; then
+			PASS_ONCE_3=YES
+		fi
+		if [[ "$PASS_ONCE_2" == YES && "$COUNT" == 1 ]]; then
+			BUILD_NAME="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+			PASS_ONCE_2=NO
+		fi
+		if [[ "$VALUE" == "<key>SUDocumentationID</key>" && "$COUNT" == 1 ]]; then
+			PASS_ONCE_2=YES
+		fi
+		if [[ "$PASS_ONCE_1" == YES && "$COUNT" == 1 ]]; then
+			if [[ ! "$VALUE" == "<string>10A403</string>" && ! "$VALUE" == "<string>10A405</string>" && ! "$VALUE" == "<string>10A406</string>" && ! "$VALUE" == "<string>10A407</string>" ]]; then # for iOS 8.4.1
+				COUNT=0
+			fi
+			PASS_ONCE_1=NO
+		fi
+		if [[ "$VALUE" == "<key>PrerequisiteBuild</key>" && "$COUNT" == 1 ]]; then
+			PASS_ONCE_1=YES
+		fi
+		if [[ "$PASS_ONCE_0" == YES && "$COUNT" == 0 ]]; then
+			if [[ "$VALUE" == "<string>9.9.$VERSION</string>" ]]; then # for iOS 10 or later
+				COUNT=1
+			elif [[ "$VALUE" == "<string>$VERSION</string>" ]]; then # for iOS 8~9
+				COUNT=1
+			fi
+			PASS_ONCE_0=NO
+		fi
+		if [[ "$VALUE" == "<key>OSVersion</key>" && "$COUNT" == 0 ]]; then
+			PASS_ONCE_0=YES
+		fi
 	done
-}
-
-function parseStage2(){
-	cat "$PROJECT_DIR/catalog.xml" | grep "			<string>9.9.$VERSION</string>
-			<string>iOS1
-				<string>$MODEL</string>
-			<string>http://appldnld.apple.com/
-\.zip</string>"
 }
 
 function showSummary(){

@@ -4,7 +4,7 @@
 
 get whole iOS system
 
-Only works with latest iOS version including beta. Not for old iOS. Works with iOS 10 or later.
+Only works with signed OTA version like 8.4.1, 9.3.5, etc... Compatible with iOS 8 or later including beta.
 
 Tested on macOS.
 
