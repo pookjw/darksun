@@ -5,7 +5,7 @@ DB_OTA="https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_Sof
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 PB_OTA="http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=10
+TOOL_VERSION=11
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
@@ -15,7 +15,7 @@ function showHelpMessage(){
 	echo "-v	iOS version"
 	echo "-p	get Public Beta Firmware (default : Public Release (GM), Developer Beta)"
 	echo "example) ./darksun.sh -n N102AP -v 11.0"
-	exit 1
+	quitTool 1
 }
 
 function setDestination(){
@@ -84,7 +84,7 @@ function setDestination(){
 	OUTPUT_DIRECTORY="$(pwd)"
 	if [[ ! -d "$OUTPUT_DIRECTORY" ]]; then
 		echo "$OUTPUT_DIRECTORY: : No such file or directory"
-		exit 1
+		quitTool 1
 	fi
 }
 
@@ -313,7 +313,9 @@ function showLines(){
 }
 
 function quitTool(){
-	rm -rf "$PROJECT_DIR"
+	if [[ -d "$PROJECT_DIR" && ! -z "$PROJECT_DIR" ]]; then
+		rm -rf "$PROJECT_DIR"
+	fi
 	exit "$1"
 }
 
@@ -323,7 +325,9 @@ setDestination "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 setProjectPath
 searchDownloadURL
 showSummary
-if [[ ! "$searchOnly" == YES ]]; then
+if [[ "$searchOnly" == YES ]]; then
+	quitTool 0
+else
 	buildBinary
 	downloadUpdate
 	extractUpdate
