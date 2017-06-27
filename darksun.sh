@@ -5,7 +5,7 @@ DB_OTA="https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_Sof
 https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 PB_OTA="http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=9
+TOOL_VERSION=10
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
@@ -162,7 +162,7 @@ function parseStage1(){
 		fi
 		if [[ "$COUNT" == 4 ]]; then
 			if [[ "$VERBOSE" == YES ]]; then
-				echo "Great."
+				echo "5 Great."
 			fi
 			SECONT_URL="$(echo $VALUE | cut -d">" -f2 | cut -d"<" -f1)"
 		fi
@@ -223,7 +223,9 @@ function showSummary(){
 	echo "Device name : $MODEL"
 	echo "iOS version : $VERSION ($BUILD_NAME)"
 	echo "Update URL : $DOWNLOAD_URL"
-	echo "Output : $OUTPUT_DIRECTORY"
+	if [[ ! "$searchOnly" == YES ]]; then
+		echo "Output : $OUTPUT_DIRECTORY"
+	fi
 	showLines "*"
 }
 
