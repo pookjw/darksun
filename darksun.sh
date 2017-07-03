@@ -1,13 +1,16 @@
 #!/bin/sh
 
-GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml" 
+GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/tv/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml" 
 DB_OTA="https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/seed-R40.Subdivide/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/seed-R40.2112/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+https://mesu.apple.com/assets/seed-R40.2112/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/tvOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=13
+TOOL_VERSION=14
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
@@ -15,7 +18,7 @@ function showHelpMessage(){
 	echo "Options:"
 	echo "-n	internal device name (See https://www.theiphonewiki.com/wiki/Models)"
 	echo "-v	iOS version"
-	echo "-p	get Public Beta Firmware (default : Public Release (GM), Developer Beta)"
+	echo "-p	get Public Beta Firmware (default : all)"
 	echo "example) ./darksun.sh -n N102AP -v 11.0"
 	quitTool 1
 }
@@ -72,7 +75,7 @@ function setDestination(){
 	fi
 
 	if [[ "$1" == "-p" || "$2" == "-p" || "$3" == "-p" || "$4" == "-p" || "$5" == "-p" || "$6" == "-p" || "$7" == "-p" || "$8" == "-p" || "$9" == "-p" ]]; then
-		DOWNLOAD_PUBLIC_BETA=YES
+		ONLY_DOWNLOAD_PUBLIC_BETA=YES
 	fi
 	if [[ "$1" == "-verbose" || "$2" == "-verbose" || "$3" == "-verbose" || "$4" == "-verbose" || "$5" == "-verbose" || "$6" == "-verbose" || "$7" == "-verbose" || "$8" == "-verbose" || "$9" == "-verbose" ]]; then
 		VERBOSE=YES
@@ -108,7 +111,7 @@ function setProjectPath(){
 
 function searchDownloadURL(){
 	echo "Searching... (will take a long time)"
-	if [[ "$DOWNLOAD_PUBLIC_BETA" == YES ]]; then
+	if [[ "$ONLY_DOWNLOAD_PUBLIC_BETA" == YES ]]; then
 		for URL in $PB_OTA; do
 			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
 				rm "$PROJECT_DIR/catalog.xml"
@@ -129,7 +132,7 @@ function searchDownloadURL(){
 			fi
 		done
 	else
-		for URL in $GM_OTA $DB_OTA; do
+		for URL in $GM_OTA $DB_OTA $PB_OTA; do
 			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
 				rm "$PROJECT_DIR/catalog.xml"
 			fi
@@ -237,7 +240,7 @@ function parseAsset(){
 		if [[ "$PASS_ONCE_0" == YES && "$COUNT" == 0 ]]; then
 			if [[ "$VALUE" == "<string>9.9.$VERSION</string>" ]]; then # for iOS 10 or later
 				COUNT=1
-			elif [[ "$VALUE" == "<string>$VERSION</string>" ]]; then # for iOS 8~9
+			elif [[ "$VALUE" == "<string>$VERSION</string>" ]]; then # for iOS 8~9, tvOS
 				COUNT=1
 			fi
 			PASS_ONCE_0=NO
@@ -301,30 +304,30 @@ function extractUpdate(){
 		unzip -qq -o -j -d "$PROJECT_DIR" "$PROJECT_DIR/update.zip" "AssetData/payloadv2/payload"
 	fi
 	cd "$OUTPUT_DIRECTORY"
-	if [[ -f "$BUILD_NAME ($MODEL)" ]]; then
-		rm "$BUILD_NAME ($MODEL)"
+	if [[ -f "$BUILD_NAME ($MODEL-$VERSION)" ]]; then
+		rm "$BUILD_NAME ($MODEL-$VERSION)"
 	fi
-	if [[ -f "$BUILD_NAME ($MODEL).ota" ]]; then
-		rm "$BUILD_NAME ($MODEL).ota"
+	if [[ -f "$BUILD_NAME ($MODEL-$VERSION).ota" ]]; then
+		rm "$BUILD_NAME ($MODEL-$VERSION).ota"
 	fi
-	if [[ -f "$BUILD_NAME ($MODEL).tar" ]]; then
-		rm "$BUILD_NAME ($MODEL).tar"
+	if [[ -f "$BUILD_NAME ($MODEL-$VERSION).tar" ]]; then
+		rm "$BUILD_NAME ($MODEL-$VERSION).tar"
 	fi
-	if [[ -d "$BUILD_NAME ($MODEL)" ]]; then
-		rm -rf "$BUILD_NAME ($MODEL)"
+	if [[ -d "$BUILD_NAME ($MODEL-$VERSION)" ]]; then
+		rm -rf "$BUILD_NAME ($MODEL-$VERSION)"
 	fi
-	if [[ -d "$BUILD_NAME ($MODEL).ota" ]]; then
-		rm -rf "$BUILD_NAME ($MODEL).ota"
+	if [[ -d "$BUILD_NAME ($MODEL-$VERSION).ota" ]]; then
+		rm -rf "$BUILD_NAME ($MODEL-$VERSION).ota"
 	fi
-	if [[ -d "$BUILD_NAME ($MODEL).tar" ]]; then
-		rm -rf "$BUILD_NAME ($MODEL).tar"
+	if [[ -d "$BUILD_NAME ($MODEL-$VERSION).tar" ]]; then
+		rm -rf "$BUILD_NAME ($MODEL-$VERSION).tar"
 	fi
-	mv "$PROJECT_DIR/payload" "$BUILD_NAME ($MODEL)"
+	mv "$PROJECT_DIR/payload" "$BUILD_NAME ($MODEL-$VERSION)"
 	echo "Extracting... (2)"
-	"$PROJECT_DIR/ota2tar/src/ota2tar" "$BUILD_NAME ($MODEL)"
-	if [[ -f "$BUILD_NAME ($MODEL).tar" ]]; then
-		rm "$BUILD_NAME ($MODEL)"
-		echo "Success! Check $OUTPUT_DIRECTORY/$BUILD_NAME ($MODEL).tar"
+	"$PROJECT_DIR/ota2tar/src/ota2tar" "$BUILD_NAME ($MODEL-$VERSION)"
+	if [[ -f "$BUILD_NAME ($MODEL-$VERSION).tar" ]]; then
+		rm "$BUILD_NAME ($MODEL-$VERSION)"
+		echo "Success! Check $OUTPUT_DIRECTORY/$BUILD_NAME ($MODEL-$VERSION).tar"
 		quitTool 0
 	else
 		echo "ERROR!"
@@ -345,8 +348,10 @@ function showLines(){
 }
 
 function quitTool(){
-	if [[ -d "$PROJECT_DIR" && ! -z "$PROJECT_DIR" ]]; then
-		rm -rf "$PROJECT_DIR"
+	if [[ "$1" == 0 ]]; then
+		if [[ -d "$PROJECT_DIR" && ! -z "$PROJECT_DIR" ]]; then
+			rm -rf "$PROJECT_DIR"
+		fi
 	fi
 	exit "$1"
 }
@@ -364,4 +369,3 @@ else
 	downloadUpdate
 	extractUpdate
 fi
-
