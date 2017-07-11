@@ -10,12 +10,12 @@ http://mesu.apple.com/assets/tvOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpd
 http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=15
+TOOL_VERSION=16
 
 function showHelpMessage(){
-	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
-	echo "Usage: ./darksun.sh [options...]"
-	echo "Options:"
+	echo "darksun : get whole iOS system (Version : $TOOL_VERSION)"
+	echo "Usage : ./darksun.sh [options...]"
+	echo "Options :"
 	echo "-n	internal device name (See https://www.theiphonewiki.com/wiki/Models)"
 	echo "-v	iOS version"
 	echo "-p	get Public Beta Firmware (default : all)"
