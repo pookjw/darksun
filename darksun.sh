@@ -10,7 +10,7 @@ http://mesu.apple.com/assets/tvOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpd
 http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=14
+TOOL_VERSION=15
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version : $TOOL_VERSION)"
@@ -19,6 +19,7 @@ function showHelpMessage(){
 	echo "-n	internal device name (See https://www.theiphonewiki.com/wiki/Models)"
 	echo "-v	iOS version"
 	echo "-p	get Public Beta Firmware (default : all)"
+	echo "-s	search only"
 	echo "example) ./darksun.sh -n N102AP -v 11.0"
 	quitTool 1
 }
@@ -80,7 +81,7 @@ function setDestination(){
 	if [[ "$1" == "-verbose" || "$2" == "-verbose" || "$3" == "-verbose" || "$4" == "-verbose" || "$5" == "-verbose" || "$6" == "-verbose" || "$7" == "-verbose" || "$8" == "-verbose" || "$9" == "-verbose" ]]; then
 		VERBOSE=YES
 	fi
-	if [[ "$1" == "-searchOnly" || "$2" == "-searchOnly" || "$3" == "-searchOnly" || "$4" == "-searchOnly" || "$5" == "-searchOnly" || "$6" == "-searchOnly" || "$7" == "-searchOnly" || "$8" == "-searchOnly" || "$9" == "-searchOnly" ]]; then
+	if [[ "$1" == "-s" || "$2" == "-s" || "$3" == "-s" || "$4" == "-s" || "$5" == "-s" || "$6" == "-s" || "$7" == "-s" || "$8" == "-s" || "$9" == "-s" ]]; then
 		searchOnly=YES
 	fi
 	if [[ -z "$MODEL" || -z "$VERSION" ]]; then
@@ -258,10 +259,13 @@ function showSummary(){
 	echo "Device name : $MODEL"
 	echo "iOS version : $VERSION ($BUILD_NAME)"
 	echo "Update URL : $DOWNLOAD_URL"
-	if [[ ! "$searchOnly" == YES ]]; then
+	if [[ "$searchOnly" == YES ]]; then
+		showLines "*"
+		quitTool 0
+	else
 		echo "Output : $OUTPUT_DIRECTORY"
+		showLines "*"
 	fi
-	showLines "*"
 }
 
 function buildBinary(){
@@ -362,10 +366,6 @@ setDestination "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 setProjectPath
 searchDownloadURL
 showSummary
-if [[ "$searchOnly" == YES ]]; then
-	quitTool 0
-else
-	buildBinary
-	downloadUpdate
-	extractUpdate
-fi
+buildBinary
+downloadUpdate
+extractUpdate

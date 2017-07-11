@@ -17,4 +17,5 @@ darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires lib
 	-n	internal device name (See https://www.theiphonewiki.com/wiki/Models)
 	-v	iOS version
 	-p	get Public Beta Firmware (default : all)
+	-s	search only
 	example) ./darksun.sh -n N102AP -v 11.0
