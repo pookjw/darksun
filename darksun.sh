@@ -1,16 +1,20 @@
 #!/bin/sh
 
-GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tv/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml" 
+GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml" 
 DB_OTA="https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/seed-R40.Subdivide/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/seed-R40.2112/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tvOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+https://mesu.apple.com/assets/seed-R40.2112/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=17
+TEST_URL="http://mesu.apple.com/assets/watch/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/watchOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/R30.11TT05-subdivisions/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/tv/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+http://mesu.apple.com/assets/tvOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml" # for development
+TOOL_VERSION=18
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version: $TOOL_VERSION)"
@@ -85,6 +89,9 @@ function setDestination(){
 	if [[ "$1" == "-s" || "$2" == "-s" || "$3" == "-s" || "$4" == "-s" || "$5" == "-s" || "$6" == "-s" || "$7" == "-s" || "$8" == "-s" || "$9" == "-s" ]]; then
 		searchOnly=YES
 	fi
+	if [[ "$1" == "--test" || "$2" == "--test" || "$3" == "--test" || "$4" == "--test" || "$5" == "--test" || "$6" == "--test" || "$7" == "--test" || "$8" == "--test" || "$9" == "--test" ]]; then
+		TEST_MODE=YES
+	fi
 	if [[ -z "$MODEL" || -z "$VERSION" ]]; then
 		showHelpMessage
 	fi
@@ -113,7 +120,27 @@ function setProjectPath(){
 
 function searchDownloadURL(){
 	echo "Searching... (will take a long time)"
-	if [[ "$ONLY_DOWNLOAD_PUBLIC_BETA" == YES ]]; then
+	if [[ "$TEST_MODE" == YES ]]; then
+		for URL in $TEST_URL; do
+			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
+				rm "$PROJECT_DIR/catalog.xml"
+			fi
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "Downloading $URL"
+				curl -o "$PROJECT_DIR/catalog.xml" "$URL"
+			else
+				curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+			fi
+			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
+				echo "ERROR : Failed to download."
+				quitTool 1
+			fi
+			parseAsset
+			if [[ ! -z "$DOWNLOAD_URL" ]]; then
+				break
+			fi
+		done
+	elif [[ "$ONLY_DOWNLOAD_PUBLIC_BETA" == YES ]]; then
 		for URL in $PB_OTA; do
 			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
 				rm "$PROJECT_DIR/catalog.xml"
@@ -177,7 +204,9 @@ function parseAsset(){
 	SECONT_URL=
 	DOWNLOAD_URL=
 	for VALUE in $(cat "$PROJECT_DIR/catalog.xml"); do
-		echo "$VALUE"
+		if [[ "$VERBOSE" == YES ]]; then
+			echo "$VALUE"
+		fi
 		if [[ "$PASS_ONCE_8" == YES && "$COUNT" == 3 ]]; then
 			SECONT_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 			PASS_ONCE_8=NO

@@ -20,3 +20,9 @@ darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires lib
 	-s		search only
 	--verbose	run verbose mode
 	example) ./darksun.sh -n N102AP -v 11.0
+
+## About watchOS and tvOS
+
+- watchOS - Use `--test` option.
+
+- tvOS - Not supported but if you want to try, use `--test` option.
