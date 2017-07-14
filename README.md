@@ -26,3 +26,9 @@ darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires lib
 - watchOS - Use `--test` option.
 
 - tvOS - Not supported but if you want to try, use `--test` option.
+
+example)
+
+`./darksun.sh -n Watch2,7 -v 4.0 --test`
+
+`./darksun.sh -n AppleTV5,3 -v 11.0 -s --test`
