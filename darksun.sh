@@ -10,16 +10,17 @@ http://mesu.apple.com/assets/tvOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpd
 http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=16
+TOOL_VERSION=17
 
 function showHelpMessage(){
-	echo "darksun : get whole iOS system (Version : $TOOL_VERSION)"
-	echo "Usage : ./darksun.sh [options...]"
-	echo "Options :"
-	echo "-n	internal device name (See https://www.theiphonewiki.com/wiki/Models)"
-	echo "-v	iOS version"
-	echo "-p	get Public Beta Firmware (default : all)"
-	echo "-s	search only"
+	echo "darksun: get whole iOS system (Version: $TOOL_VERSION)"
+	echo "Usage: ./darksun.sh [options...]"
+	echo "Options:"
+	echo "-n		internal device name (See https://www.theiphonewiki.com/wiki/Models)"
+	echo "-v		iOS version"
+	echo "-p		get Public Beta Firmware (default: all)"
+	echo "-s		search only"
+	echo "--verbose	run verbose mode"
 	echo "example) ./darksun.sh -n N102AP -v 11.0"
 	quitTool 1
 }
@@ -78,7 +79,7 @@ function setDestination(){
 	if [[ "$1" == "-p" || "$2" == "-p" || "$3" == "-p" || "$4" == "-p" || "$5" == "-p" || "$6" == "-p" || "$7" == "-p" || "$8" == "-p" || "$9" == "-p" ]]; then
 		ONLY_DOWNLOAD_PUBLIC_BETA=YES
 	fi
-	if [[ "$1" == "-verbose" || "$2" == "-verbose" || "$3" == "-verbose" || "$4" == "-verbose" || "$5" == "-verbose" || "$6" == "-verbose" || "$7" == "-verbose" || "$8" == "-verbose" || "$9" == "-verbose" ]]; then
+	if [[ "$1" == "--verbose" || "$2" == "--verbose" || "$3" == "--verbose" || "$4" == "--verbose" || "$5" == "--verbose" || "$6" == "--verbose" || "$7" == "--verbose" || "$8" == "--verbose" || "$9" == "--verbose" ]]; then
 		VERBOSE=YES
 	fi
 	if [[ "$1" == "-s" || "$2" == "-s" || "$3" == "-s" || "$4" == "-s" || "$5" == "-s" || "$6" == "-s" || "$7" == "-s" || "$8" == "-s" || "$9" == "-s" ]]; then
@@ -176,6 +177,7 @@ function parseAsset(){
 	SECONT_URL=
 	DOWNLOAD_URL=
 	for VALUE in $(cat "$PROJECT_DIR/catalog.xml"); do
+		echo "$VALUE"
 		if [[ "$PASS_ONCE_8" == YES && "$COUNT" == 3 ]]; then
 			SECONT_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 			PASS_ONCE_8=NO
