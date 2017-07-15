@@ -14,7 +14,7 @@ http://mesu.apple.com/assets/R30.11TT05-subdivisions/com_apple_MobileAsset_Softw
 http://mesu.apple.com/assets/tv/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml" # for development
-TOOL_VERSION=18
+TOOL_VERSION=19
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS system (Version: $TOOL_VERSION)"
@@ -285,16 +285,16 @@ function parseAsset(){
 
 function showSummary(){
 	showLines "*"
-	echo "Summary"
+	echo "SUMMARY"
 	showLines "-"
-	echo "Device name : $MODEL"
-	echo "iOS version : $VERSION ($BUILD_NAME)"
-	echo "Update URL : $DOWNLOAD_URL"
+	echo "Device name: $MODEL"
+	echo "iOS version: $VERSION ($BUILD_NAME)"
+	echo "Update URL: $DOWNLOAD_URL"
 	if [[ "$searchOnly" == YES ]]; then
 		showLines "*"
 		quitTool 0
 	else
-		echo "Output : $OUTPUT_DIRECTORY"
+		echo "Output: $OUTPUT_DIRECTORY"
 		showLines "*"
 	fi
 }
