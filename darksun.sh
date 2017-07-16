@@ -23,7 +23,7 @@ https://mesu.apple.com/assets/watchOSDeveloperSeed/com_apple_MobileAsset_Softwar
 # - iOS 10 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=20
+TOOL_VERSION=21
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
@@ -97,7 +97,7 @@ function setOption(){
 		VERBOSE=YES
 	fi
 	if [[ "$1" == "-s" || "$2" == "-s" || "$3" == "-s" || "$4" == "-s" || "$5" == "-s" || "$6" == "-s" || "$7" == "-s" || "$8" == "-s" || "$9" == "-s" ]]; then
-		searchOnly=YES
+		SEARCH_ONLY=YES
 	fi
 	if [[ "$1" == "--no-ssl" || "$2" == "--no-ssl" || "$3" == "--no-ssl" || "$4" == "--no-ssl" || "$5" == "--no-ssl" || "$6" == "--no-ssl" || "$7" == "--no-ssl" || "$8" == "--no-ssl" || "$9" == "--no-ssl" ]]; then
 		NO_SSL=YES
@@ -298,7 +298,7 @@ function showSummary(){
 	echo "Device name: $MODEL"
 	echo "Version: $VERSION ($BUILD_NAME)"
 	echo "Update URL: $DOWNLOAD_URL"
-	if [[ "$searchOnly" == YES ]]; then
+	if [[ "$SEARCH_ONLY" == YES ]]; then
 		showLines "*"
 		quitTool 0
 	else
