@@ -4,7 +4,7 @@
 
 get whole iOS/watchOS system
 
-Only works with signed OTA version like 8.4.1, 9.3.5, etc... Compatible with iOS 8 or later including beta.
+Only works with signed OTA version like 8.4.1, 9.3.5, etc... Compatible with iOS 8/watchOS 3 or later including beta.
 
 Tested on macOS, iOS. (Running on iOS requires jailbreak, and may have to use `--no-ssl` option)
 
