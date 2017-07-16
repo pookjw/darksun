@@ -2,11 +2,11 @@
 
 # darksun
 
-get whole iOS system
+get whole iOS/watchOS system
 
 Only works with signed OTA version like 8.4.1, 9.3.5, etc... Compatible with iOS 8 or later including beta.
 
-Tested on macOS.
+Tested on macOS, iOS. (Running on iOS requires jailbreak, and may have to use `--no-ssl` option)
 
 darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires libarchive to run.
 
@@ -14,21 +14,10 @@ darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires lib
 
 	./darksun.sh [options...]
 	Options:
-	-n		internal device name (See https://www.theiphonewiki.com/wiki/Models)
-	-v		iOS version
-	-p		get Public Beta Firmware (default: all)
+	-n		internal device name (see https://www.theiphonewiki.com/wiki/Models)
+	-v		iOS/watchOS version
+	-p		get iOS Public Beta Firmware (default: all)
 	-s		search only
 	--verbose	run verbose mode
+	--no-ssl	no SSL mode
 	example) ./darksun.sh -n N102AP -v 11.0
-
-## About watchOS and tvOS
-
-- watchOS - Use `--test` option.
-
-- tvOS - Not supported but if you want to try, use `--test` option.
-
-example)
-
-`./darksun.sh -n Watch2,7 -v 4.0 --test`
-
-`./darksun.sh -n AppleTV5,3 -v 11.0 -s --test`

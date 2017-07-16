@@ -1,35 +1,45 @@
 #!/bin/sh
 
-GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml" 
-DB_OTA="https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+# GM_OTA 
+# - iOS GM Seed
+# - watchOS GM Seed
+# - iOS 9 Public Beta Seed (But now GM)
+# - iOS 8 Public Beta Seed (But now GM)
+GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/watch/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/seed-R40.Subdivide/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/seed-R40.2112/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+# DB_OTA
+# - iOS 11 Developer Beta Seed
+# - iOS 10 Developer Beta Seed
+# - watchOS 4 Developer Beta Seed
+# - watchOS 3 Developer Beta Seed
+DB_OTA="https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/watchOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+# PB_OTA
+# - iOS 11 Public Beta Seed
+# - iOS 10 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TEST_URL="http://mesu.apple.com/assets/watch/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/watchOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/R30.11TT05-subdivisions/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tv/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tvOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml" # for development
-TOOL_VERSION=19
+https://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+TOOL_VERSION=20
 
 function showHelpMessage(){
-	echo "darksun: get whole iOS system (Version: $TOOL_VERSION)"
+	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
 	echo "Usage: ./darksun.sh [options...]"
 	echo "Options:"
-	echo "-n		internal device name (See https://www.theiphonewiki.com/wiki/Models)"
-	echo "-v		iOS version"
+	echo "-n		internal device name (see https://www.theiphonewiki.com/wiki/Models)"
+	echo "-v		iOS/watchOS version"
 	echo "-p		get Public Beta Firmware (default: all)"
 	echo "-s		search only"
 	echo "--verbose	run verbose mode"
+	echo "--no-ssl	no SSL mode"
 	echo "example) ./darksun.sh -n N102AP -v 11.0"
 	quitTool 1
 }
 
-function setDestination(){
+function setOption(){
 	if [[ "$1" == -n ]]; then
 		MODEL="$2"
 	fi
@@ -89,8 +99,8 @@ function setDestination(){
 	if [[ "$1" == "-s" || "$2" == "-s" || "$3" == "-s" || "$4" == "-s" || "$5" == "-s" || "$6" == "-s" || "$7" == "-s" || "$8" == "-s" || "$9" == "-s" ]]; then
 		searchOnly=YES
 	fi
-	if [[ "$1" == "--test" || "$2" == "--test" || "$3" == "--test" || "$4" == "--test" || "$5" == "--test" || "$6" == "--test" || "$7" == "--test" || "$8" == "--test" || "$9" == "--test" ]]; then
-		TEST_MODE=YES
+	if [[ "$1" == "--no-ssl" || "$2" == "--no-ssl" || "$3" == "--no-ssl" || "$4" == "--no-ssl" || "$5" == "--no-ssl" || "$6" == "--no-ssl" || "$7" == "--no-ssl" || "$8" == "--no-ssl" || "$9" == "--no-ssl" ]]; then
+		NO_SSL=YES
 	fi
 	if [[ -z "$MODEL" || -z "$VERSION" ]]; then
 		showHelpMessage
@@ -120,39 +130,28 @@ function setProjectPath(){
 
 function searchDownloadURL(){
 	echo "Searching... (will take a long time)"
-	if [[ "$TEST_MODE" == YES ]]; then
-		for URL in $TEST_URL; do
-			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
-				rm "$PROJECT_DIR/catalog.xml"
-			fi
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "Downloading $URL"
-				curl -o "$PROJECT_DIR/catalog.xml" "$URL"
-			else
-				curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
-			fi
-			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
-				echo "ERROR : Failed to download."
-				quitTool 1
-			fi
-			parseAsset
-			if [[ ! -z "$DOWNLOAD_URL" ]]; then
-				break
-			fi
-		done
-	elif [[ "$ONLY_DOWNLOAD_PUBLIC_BETA" == YES ]]; then
+	if [[ "$ONLY_DOWNLOAD_PUBLIC_BETA" == YES ]]; then
 		for URL in $PB_OTA; do
 			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
 				rm "$PROJECT_DIR/catalog.xml"
 			fi
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "Downloading $URL"
-				curl -o "$PROJECT_DIR/catalog.xml" "$URL"
+			if [[ "$NO_SSL" == YES ]]; then
+				if [[ "$VERBOSE" == YES ]]; then
+					echo "Downloading $URL"
+					curl -k -o "$PROJECT_DIR/catalog.xml" "$URL"
+				else
+					curl -k -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+				fi
 			else
-				curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+				if [[ "$VERBOSE" == YES ]]; then
+					echo "Downloading $URL"
+					curl -o "$PROJECT_DIR/catalog.xml" "$URL"
+				else
+					curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+				fi
 			fi
 			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
-				echo "ERROR : Failed to download."
+				echo "ERROR: Failed to download."
 				quitTool 1
 			fi
 			parseAsset
@@ -165,11 +164,20 @@ function searchDownloadURL(){
 			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
 				rm "$PROJECT_DIR/catalog.xml"
 			fi
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "Downloading $URL"
-				curl -o "$PROJECT_DIR/catalog.xml" "$URL"
+			if [[ "$NO_SSL" == YES ]]; then
+				if [[ "$VERBOSE" == YES ]]; then
+					echo "Downloading $URL"
+					curl -k -o "$PROJECT_DIR/catalog.xml" "$URL"
+				else
+					curl -k -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+				fi
 			else
-				curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+				if [[ "$VERBOSE" == YES ]]; then
+					echo "Downloading $URL"
+					curl -o "$PROJECT_DIR/catalog.xml" "$URL"
+				else
+					curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+				fi
 			fi
 			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
 				echo "ERROR : Failed to download."
@@ -272,7 +280,7 @@ function parseAsset(){
 		if [[ "$PASS_ONCE_0" == YES && "$COUNT" == 0 ]]; then
 			if [[ "$VALUE" == "<string>9.9.$VERSION</string>" ]]; then # for iOS 10 or later
 				COUNT=1
-			elif [[ "$VALUE" == "<string>$VERSION</string>" ]]; then # for iOS 8~9, tvOS
+			elif [[ "$VALUE" == "<string>$VERSION</string>" ]]; then # for iOS 8~9, watchOS
 				COUNT=1
 			fi
 			PASS_ONCE_0=NO
@@ -288,7 +296,7 @@ function showSummary(){
 	echo "SUMMARY"
 	showLines "-"
 	echo "Device name: $MODEL"
-	echo "iOS version: $VERSION ($BUILD_NAME)"
+	echo "Version: $VERSION ($BUILD_NAME)"
 	echo "Update URL: $DOWNLOAD_URL"
 	if [[ "$searchOnly" == YES ]]; then
 		showLines "*"
@@ -306,11 +314,25 @@ function buildBinary(){
 	fi
 	cd "$PROJECT_DIR"
 	# See https://github.com/emonti/ota2tar
-	git clone https://github.com/emonti/ota2tar
+	if [[ "$NO_SSL" == YES ]]; then
+		if [[ "$VERBOSE" == YES ]]; then
+			curl -k -o "$PROJECT_DIR/ota2tar.zip" https://codeload.github.com/emonti/ota2tar/zip/master
+			unzip -o -d "$PROJECT_DIR" "$PROJECT_DIR/ota2tar.zip"
+		else
+			curl -k -# -o "$PROJECT_DIR/ota2tar.zip" https://codeload.github.com/emonti/ota2tar/zip/master
+			unzip -qq -o -d "$PROJECT_DIR" "$PROJECT_DIR/ota2tar.zip"
+		fi
+		if [[ ! -d "$PROJECT_DIR/ota2tar-master" ]]; then
+			echo "ERROR: Can't download ota2tar."
+		fi
+		mv "$PROJECT_DIR/ota2tar-master" "$PROJECT_DIR/ota2tar"
+	else
+		git clone https://github.com/emonti/ota2tar
+	fi
 	cd ota2tar/src
 	make ota2tar # Requires libarchive
 	if [[ ! -f ota2tar ]]; then
-		echo "ERROR : Can't build ota2tar"
+		echo "ERROR: Can't build ota2tar"
 		quitTool 1
 	fi
 }
@@ -320,13 +342,21 @@ function downloadUpdate(){
 		rm "$PROJECT_DIR/update.zip"
 	fi
 	echo "Downloading update file..."
-	if [[ "$VERBOSE" == YES ]]; then
-		curl -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+	if [[ "$NO_SSL" == YES ]]; then
+		if [[ "$VERBOSE" == YES ]]; then
+			curl -k -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+		else
+			curl -k -# -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+		fi
 	else
-		curl -# -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+		if [[ "$VERBOSE" == YES ]]; then
+			curl -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+		else
+			curl -# -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+		fi
 	fi
 	if [[ ! -f "$PROJECT_DIR/update.zip" ]]; then
-		echo "ERROR : Can't download update file."
+		echo "ERROR: Can't download update file."
 		quitTool 1
 	fi
 }
@@ -393,7 +423,7 @@ function quitTool(){
 
 #######################################
 
-setDestination "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
+setOption "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 setProjectPath
 searchDownloadURL
 showSummary
