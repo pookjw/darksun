@@ -23,7 +23,7 @@ https://mesu.apple.com/assets/watchOSDeveloperSeed/com_apple_MobileAsset_Softwar
 # - iOS 10 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=21
+TOOL_VERSION=22
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
@@ -107,7 +107,7 @@ function setOption(){
 	fi
 	OUTPUT_DIRECTORY="$(pwd)"
 	if [[ ! -d "$OUTPUT_DIRECTORY" ]]; then
-		echo "$OUTPUT_DIRECTORY: : No such file or directory"
+		echo "$OUTPUT_DIRECTORY: No such file or directory"
 		quitTool 1
 	fi
 }
@@ -121,7 +121,7 @@ function setProjectPath(){
 			mkdir -p "/tmp/darksun/$COUNT"
 			PROJECT_DIR="/tmp/darksun/$COUNT"
 			if [[ "$VERBOSE" == YES ]]; then
-				echo "Temp folder : $PROJECT_DIR"
+				echo "Temp folder: $PROJECT_DIR"
 			fi
 			break
 		fi
