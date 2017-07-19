@@ -4,9 +4,9 @@
 
 get whole iOS/watchOS system
 
-Only works with signed OTA version like 8.4.1, 9.3.5, etc... Compatible with iOS 8/watchOS 3 or later including beta.
+Only works with signed OTA version like 8.4.1, 9.3.5, 10.3.3 etc... Compatible with iOS 8/watchOS 3 or later.
 
-Tested on macOS, iOS. (Running on iOS requires jailbreak, and may have to use `--no-ssl` option)
+Tested on macOS, iOS. (Running on iOS requires jailbreak and dependencies. may have to use `--no-ssl` option)
 
 darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires libarchive to run.
 
@@ -14,10 +14,11 @@ darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires lib
 
 	./darksun.sh [options...]
 	Options:
-	-n		internal device name (see https://www.theiphonewiki.com/wiki/Models)
+	-n		device identifier (see https://www.theiphonewiki.com/wiki/Models)
 	-v		iOS/watchOS version
-	-p		get iOS Public Beta Firmware (default: all)
+	-d		get Developer Beta Firmware (default: GM only)
+	-p		get Public Beta Firmware (default: GM only)
 	-s		search only
 	--verbose	run verbose mode
 	--no-ssl	no SSL mode
-	example) ./darksun.sh -n N102AP -v 11.0
+	example) ./darksun.sh -n iPod7,1 -v 10.3.3

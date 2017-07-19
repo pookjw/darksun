@@ -3,39 +3,38 @@
 # GM_OTA 
 # - iOS GM Seed
 # - watchOS GM Seed
+# - iOS 10 Public Beta Seed (But now GM)
 # - iOS 9 Public Beta Seed (But now GM)
 # - iOS 8 Public Beta Seed (But now GM)
+# - watchOS 3 Developer Beta Seed (But now GM)
 GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/watch/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 https://mesu.apple.com/assets/seed-R40.Subdivide/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/seed-R40.2112/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+https://mesu.apple.com/assets/seed-R40.2112/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
+https://mesu.apple.com/assets/watchOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 # DB_OTA
 # - iOS 11 Developer Beta Seed
-# - iOS 10 Developer Beta Seed
 # - watchOS 4 Developer Beta Seed
-# - watchOS 3 Developer Beta Seed
 DB_OTA="https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/iOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/watchOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 # PB_OTA
 # - iOS 11 Public Beta Seed
-# - iOS 10 Public Beta Seed
-PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=22
+PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+TOOL_VERSION=23
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
 	echo "Usage: ./darksun.sh [options...]"
 	echo "Options:"
-	echo "-n		internal device name (see https://www.theiphonewiki.com/wiki/Models)"
+	echo "-n		device identifier (see https://www.theiphonewiki.com/wiki/Models)"
 	echo "-v		iOS/watchOS version"
-	echo "-p		get Public Beta Firmware (default: all)"
+	echo "-d		get Developer Beta Firmware (default: GM only)"
+	echo "-p		get Public Beta Firmware (default: GM only)"
 	echo "-s		search only"
 	echo "--verbose	run verbose mode"
 	echo "--no-ssl	no SSL mode"
-	echo "example) ./darksun.sh -n N102AP -v 11.0"
+	echo "example) ./darksun.sh -n iPod7,1 -v 10.3.3"
 	quitTool 1
 }
 
@@ -90,7 +89,12 @@ function setOption(){
 		VERSION="$9"
 	fi
 
+	if [[ "$1" == "-d" || "$2" == "-d" || "$3" == "-d" || "$4" == "-d" || "$5" == "-d" || "$6" == "-d" || "$7" == "-d" || "$8" == "-d" || "$9" == "-d" ]]; then
+		ONLY_DOWNLOAD_DEVELOPER_BETA=YES
+		ONLY_DOWNLOAD_PUBLIC_BETA=NO
+	fi
 	if [[ "$1" == "-p" || "$2" == "-p" || "$3" == "-p" || "$4" == "-p" || "$5" == "-p" || "$6" == "-p" || "$7" == "-p" || "$8" == "-p" || "$9" == "-p" ]]; then
+		ONLY_DOWNLOAD_DEVELOPER_BETA=NO
 		ONLY_DOWNLOAD_PUBLIC_BETA=YES
 	fi
 	if [[ "$1" == "--verbose" || "$2" == "--verbose" || "$3" == "--verbose" || "$4" == "--verbose" || "$5" == "--verbose" || "$6" == "--verbose" || "$7" == "--verbose" || "$8" == "--verbose" || "$9" == "--verbose" ]]; then
@@ -110,6 +114,7 @@ function setOption(){
 		echo "$OUTPUT_DIRECTORY: No such file or directory"
 		quitTool 1
 	fi
+	echo "$ONLY_DOWNLOAD_DEVELOPER_BETA $ONLY_DOWNLOAD_PUBLIC_BETA"
 }
 
 function setProjectPath(){
@@ -159,8 +164,37 @@ function searchDownloadURL(){
 				break
 			fi
 		done
+	elif [[ "$ONLY_DOWNLOAD_DEVELOPER_BETA" == YES ]]; then
+		for URL in $DB_OTA; do
+			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
+				rm "$PROJECT_DIR/catalog.xml"
+			fi
+			if [[ "$NO_SSL" == YES ]]; then
+				if [[ "$VERBOSE" == YES ]]; then
+					echo "Downloading $URL"
+					curl -k -o "$PROJECT_DIR/catalog.xml" "$URL"
+				else
+					curl -k -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+				fi
+			else
+				if [[ "$VERBOSE" == YES ]]; then
+					echo "Downloading $URL"
+					curl -o "$PROJECT_DIR/catalog.xml" "$URL"
+				else
+					curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
+				fi
+			fi
+			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
+				echo "ERROR: Failed to download."
+				quitTool 1
+			fi
+			parseAsset
+			if [[ ! -z "$DOWNLOAD_URL" ]]; then
+				break
+			fi
+		done
 	else
-		for URL in $GM_OTA $DB_OTA $PB_OTA; do
+		for URL in $GM_OTA; do
 			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
 				rm "$PROJECT_DIR/catalog.xml"
 			fi
