@@ -21,7 +21,7 @@ https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_Softwa
 # PB_OTA
 # - iOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=23
+TOOL_VERSION=24
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
@@ -114,7 +114,6 @@ function setOption(){
 		echo "$OUTPUT_DIRECTORY: No such file or directory"
 		quitTool 1
 	fi
-	echo "$ONLY_DOWNLOAD_DEVELOPER_BETA $ONLY_DOWNLOAD_PUBLIC_BETA"
 }
 
 function setProjectPath(){
