@@ -21,7 +21,7 @@ https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_Softwa
 # PB_OTA
 # - iOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=28
+TOOL_VERSION=29
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
@@ -218,6 +218,7 @@ function searchDownloadURL(){
 		fi
 		parseAsset
 		if [[ ! -z "$DOWNLOAD_URL" ]]; then
+			BUILD_NAME="$(echo "$BUILD_NAME_VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 			break
 		fi
 	done
@@ -296,7 +297,7 @@ function parseAsset(){
 				PASS_ONCE_3=YES
 			fi
 			if [[ "$PASS_ONCE_2" == YES ]]; then
-				BUILD_NAME="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+				BUILD_NAME_VALUE="$VALUE"
 				PASS_ONCE_2=NO
 			fi
 			if [[ "$VALUE" == "<key>SUDocumentationID</key>" ]]; then
