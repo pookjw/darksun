@@ -21,7 +21,7 @@ https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_Softwa
 # PB_OTA
 # - iOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=24
+TOOL_VERSION=25
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
@@ -135,93 +135,40 @@ function setProjectPath(){
 function searchDownloadURL(){
 	echo "Searching... (will take a long time)"
 	if [[ "$ONLY_DOWNLOAD_PUBLIC_BETA" == YES ]]; then
-		for URL in $PB_OTA; do
-			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
-				rm "$PROJECT_DIR/catalog.xml"
-			fi
-			if [[ "$NO_SSL" == YES ]]; then
-				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $URL"
-					curl -k -o "$PROJECT_DIR/catalog.xml" "$URL"
-				else
-					curl -k -s -o "$PROJECT_DIR/catalog.xml" "$URL"
-				fi
-			else
-				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $URL"
-					curl -o "$PROJECT_DIR/catalog.xml" "$URL"
-				else
-					curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
-				fi
-			fi
-			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
-				echo "ERROR: Failed to download."
-				quitTool 1
-			fi
-			parseAsset
-			if [[ ! -z "$DOWNLOAD_URL" ]]; then
-				break
-			fi
-		done
+		URL="$PB_OTA"
 	elif [[ "$ONLY_DOWNLOAD_DEVELOPER_BETA" == YES ]]; then
-		for URL in $DB_OTA; do
-			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
-				rm "$PROJECT_DIR/catalog.xml"
-			fi
-			if [[ "$NO_SSL" == YES ]]; then
-				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $URL"
-					curl -k -o "$PROJECT_DIR/catalog.xml" "$URL"
-				else
-					curl -k -s -o "$PROJECT_DIR/catalog.xml" "$URL"
-				fi
-			else
-				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $URL"
-					curl -o "$PROJECT_DIR/catalog.xml" "$URL"
-				else
-					curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
-				fi
-			fi
-			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
-				echo "ERROR: Failed to download."
-				quitTool 1
-			fi
-			parseAsset
-			if [[ ! -z "$DOWNLOAD_URL" ]]; then
-				break
-			fi
-		done
+		URL="$DB_OTA"
 	else
-		for URL in $GM_OTA; do
-			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
-				rm "$PROJECT_DIR/catalog.xml"
-			fi
-			if [[ "$NO_SSL" == YES ]]; then
-				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $URL"
-					curl -k -o "$PROJECT_DIR/catalog.xml" "$URL"
-				else
-					curl -k -s -o "$PROJECT_DIR/catalog.xml" "$URL"
-				fi
-			else
-				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $URL"
-					curl -o "$PROJECT_DIR/catalog.xml" "$URL"
-				else
-					curl -s -o "$PROJECT_DIR/catalog.xml" "$URL"
-				fi
-			fi
-			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
-				echo "ERROR : Failed to download."
-				quitTool 1
-			fi
-			parseAsset
-			if [[ ! -z "$DOWNLOAD_URL" ]]; then
-				break
-			fi
-		done
+		URL="$GM_OTA"
 	fi
+	for OTA_URL in $URL; do
+		if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
+			rm "$PROJECT_DIR/catalog.xml"
+		fi
+		if [[ "$NO_SSL" == YES ]]; then
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "Downloading $OTA_URL"
+				curl -k -o "$PROJECT_DIR/catalog.xml" "$OTA_URL"
+			else
+				curl -k -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL"
+			fi
+		else
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "Downloading $OTA_URL"
+				curl -o "$PROJECT_DIR/catalog.xml" "$OTA_URL"
+			else
+				curl -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL"
+			fi
+		fi
+		if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
+			echo "ERROR : Failed to download."
+			quitTool 1
+		fi
+		parseAsset
+		if [[ ! -z "$DOWNLOAD_URL" ]]; then
+			break
+		fi
+	done
 	if [[ -z "$DOWNLOAD_URL" ]]; then
 		echo "$MODEL | $VERSION not found."
 		quitTool 1
@@ -245,81 +192,83 @@ function parseAsset(){
 	SECONT_URL=
 	DOWNLOAD_URL=
 	for VALUE in $(cat "$PROJECT_DIR/catalog.xml"); do
-		if [[ "$VERBOSE" == YES ]]; then
-			echo "$VALUE"
-		fi
-		if [[ "$PASS_ONCE_8" == YES && "$COUNT" == 3 ]]; then
-			SECONT_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
-			PASS_ONCE_8=NO
-			DOWNLOAD_URL="$FIRST_URL$SECONT_URL"
-			break
-		fi
-		if [[ "$VALUE" == "<key>__RelativePath</key>" && "$COUNT" == 3 ]]; then
-			PASS_ONCE_8=YES
-		fi
-		if [[ "$PASS_ONCE_7" == YES && "$COUNT" == 2 ]]; then
-			FIRST_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
-			PASS_ONCE_7=NO
-			COUNT=3
-		fi
-		if [[ "$VALUE" == "<key>__BaseURL</key>" && "$COUNT" == 2 ]]; then
-			PASS_ONCE_7=YES
-		fi
-		if [[ "$PASS_ONCE_6" == YES && "$COUNT" == 1 ]]; then
-			if [[ "$VALUE" == "<string>$MODEL</string>" ]]; then
-				COUNT=2
-			else
-				BUILD_NAME=
-				COUNT=0
+		if [[ "$COUNT" == 3 ]]; then
+			if [[ "$PASS_ONCE_8" == YES ]]; then
+				SECONT_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+				PASS_ONCE_8=NO
+				DOWNLOAD_URL="$FIRST_URL$SECONT_URL"
+				break
 			fi
-			PASS_ONCE_6=NO
-		fi
-		if [[ "$PASS_ONCE_5" == YES && "$COUNT" == 1 ]]; then
-			PASS_ONCE_5=NO
-			PASS_ONCE_6=YES
-		fi
-		if [[ "$VALUE" == "<key>SupportedDevices</key>" && "$COUNT" == 1 ]]; then
-			PASS_ONCE_5=YES
-		fi
-		if [[ "$PASS_ONCE_4" == YES && "$COUNT" == 1 ]]; then
-			if [[ "$VALUE" == "<string>$MODEL</string>" ]]; then
-				COUNT=2
+			if [[ "$VALUE" == "<key>__RelativePath</key>" ]]; then
+				PASS_ONCE_8=YES
 			fi
-			PASS_ONCE_4=NO
-		fi
-		if [[ "$PASS_ONCE_3" == YES && "$COUNT" == 1 ]]; then
-			PASS_ONCE_3=NO
-			PASS_ONCE_4=YES
-		fi
-		if [[ "$VALUE" == "<key>SupportedDeviceModels</key>" && "$COUNT" == 1 ]]; then
-			PASS_ONCE_3=YES
-		fi
-		if [[ "$PASS_ONCE_2" == YES && "$COUNT" == 1 ]]; then
-			BUILD_NAME="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
-			PASS_ONCE_2=NO
-		fi
-		if [[ "$VALUE" == "<key>SUDocumentationID</key>" && "$COUNT" == 1 ]]; then
-			PASS_ONCE_2=YES
-		fi
-		if [[ "$PASS_ONCE_1" == YES && "$COUNT" == 1 ]]; then
-			if [[ ! "$VALUE" == "<string>10A403</string>" && ! "$VALUE" == "<string>10A405</string>" && ! "$VALUE" == "<string>10A406</string>" && ! "$VALUE" == "<string>10A407</string>" ]]; then # for iOS 8.4.1
-				COUNT=0
+		elif [[ "$COUNT" == 2 ]]; then
+			if [[ "$PASS_ONCE_7" == YES ]]; then
+				FIRST_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+				PASS_ONCE_7=NO
+				COUNT=3
 			fi
-			PASS_ONCE_1=NO
-		fi
-		if [[ "$VALUE" == "<key>PrerequisiteBuild</key>" && "$COUNT" == 1 ]]; then
-			PASS_ONCE_1=YES
-		fi
-		if [[ "$PASS_ONCE_0" == YES && "$COUNT" == 0 ]]; then
-			if [[ "$VALUE" == "<string>9.9.$VERSION</string>" ]]; then # for iOS 10 or later
-				COUNT=1
-			elif [[ "$VALUE" == "<string>$VERSION</string>" ]]; then # for iOS 8~9, watchOS
-				COUNT=1
+			if [[ "$VALUE" == "<key>__BaseURL</key>" ]]; then
+				PASS_ONCE_7=YES
 			fi
-			PASS_ONCE_0=NO
-		fi
-		if [[ "$VALUE" == "<key>OSVersion</key>" && "$COUNT" == 0 ]]; then
-			PASS_ONCE_0=YES
+		elif [[ "$COUNT" == 1 ]]; then
+			if [[ "$PASS_ONCE_6" == YES ]]; then
+				if [[ "$VALUE" == "<string>$MODEL</string>" ]]; then
+					COUNT=2
+				else
+					BUILD_NAME=
+					COUNT=0
+				fi
+				PASS_ONCE_6=NO
+			fi
+			if [[ "$PASS_ONCE_5" == YES ]]; then
+				PASS_ONCE_5=NO
+				PASS_ONCE_6=YES
+			fi
+			if [[ "$VALUE" == "<key>SupportedDevices</key>" ]]; then
+				PASS_ONCE_5=YES
+			fi
+			if [[ "$PASS_ONCE_4" == YES ]]; then
+				if [[ "$VALUE" == "<string>$MODEL</string>" ]]; then
+					COUNT=2
+				fi
+				PASS_ONCE_4=NO
+			fi
+			if [[ "$PASS_ONCE_3" == YES ]]; then
+				PASS_ONCE_3=NO
+				PASS_ONCE_4=YES
+			fi
+			if [[ "$VALUE" == "<key>SupportedDeviceModels</key>" ]]; then
+				PASS_ONCE_3=YES
+			fi
+			if [[ "$PASS_ONCE_2" == YES ]]; then
+				BUILD_NAME="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+				PASS_ONCE_2=NO
+			fi
+			if [[ "$VALUE" == "<key>SUDocumentationID</key>" && "$COUNT" == 1 ]]; then
+				PASS_ONCE_2=YES
+			fi
+			if [[ "$PASS_ONCE_1" == YES ]]; then
+				if [[ ! "$VALUE" == "<string>10A403</string>" && ! "$VALUE" == "<string>10A405</string>" && ! "$VALUE" == "<string>10A406</string>" && ! "$VALUE" == "<string>10A407</string>" ]]; then # for iOS 8.4.1
+					COUNT=0
+				fi
+				PASS_ONCE_1=NO
+			fi
+			if [[ "$VALUE" == "<key>PrerequisiteBuild</key>" && "$COUNT" == 1 ]]; then
+				PASS_ONCE_1=YES
+			fi
+		elif [[ "$COUNT" == 0 ]]; then
+			if [[ "$PASS_ONCE_0" == YES ]]; then
+				if [[ "$VALUE" == "<string>9.9.$VERSION</string>" ]]; then # for iOS 10 or later
+					COUNT=1
+				elif [[ "$VALUE" == "<string>$VERSION</string>" ]]; then # for iOS 8~9, watchOS
+					COUNT=1
+				fi
+				PASS_ONCE_0=NO
+			fi
+			if [[ "$VALUE" == "<key>OSVersion</key>" ]]; then
+				PASS_ONCE_0=YES
+			fi
 		fi
 	done
 }
