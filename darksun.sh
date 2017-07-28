@@ -21,19 +21,21 @@ https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_Softwa
 # PB_OTA
 # - iOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=25
+TOOL_VERSION=26
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
 	echo "Usage: ./darksun.sh [options...]"
 	echo "Options:"
-	echo "-n		device identifier (see https://www.theiphonewiki.com/wiki/Models)"
-	echo "-v		iOS/watchOS version"
-	echo "-d		get Developer Beta Firmware (default: GM only)"
-	echo "-p		get Public Beta Firmware (default: GM only)"
-	echo "-s		search only"
-	echo "--verbose	run verbose mode"
-	echo "--no-ssl	no SSL mode"
+	echo "-n [name]		device identifier (see https://www.theiphonewiki.com/wiki/Models)"
+	echo "-v [version]		iOS/watchOS version"
+	echo "-e [prerequisite]	get delta update file (default: combo)"
+	echo "-d			get Developer Beta Firmware (default: GM only)"
+	echo "-p			get Public Beta Firmware (default: GM only)"
+	echo "-s			search only"
+	echo "-u			only show update URL on summary"
+	echo "--verbose		run verbose mode"
+	echo "--no-ssl		no SSL mode"
 	echo "example) ./darksun.sh -n iPod7,1 -v 10.3.3"
 	quitTool 1
 }
@@ -89,6 +91,39 @@ function setOption(){
 		VERSION="$9"
 	fi
 
+	if [[ "$1" == -e ]]; then
+		PREREQUISITE_BUILD="$2"
+		SEARCH_DELTA_UPDATE=YES
+	fi
+	if [[ "$2" == -e ]]; then
+		PREREQUISITE_BUILD="$3"
+		SEARCH_DELTA_UPDATE=YES
+	fi
+	if [[ "$3" == -e ]]; then
+		PREREQUISITE_BUILD="$4"
+		SEARCH_DELTA_UPDATE=YES
+	fi
+	if [[ "$4" == -e ]]; then
+		PREREQUISITE_BUILD="$5"
+		SEARCH_DELTA_UPDATE=YES
+	fi
+	if [[ "$5" == -e ]]; then
+		PREREQUISITE_BUILD="$6"
+		SEARCH_DELTA_UPDATE=YES
+	fi
+	if [[ "$6" == -e ]]; then
+		PREREQUISITE_BUILD="$7"
+		SEARCH_DELTA_UPDATE=YES
+	fi
+	if [[ "$7" == -e ]]; then
+		PREREQUISITE_BUILD="$8"
+		SEARCH_DELTA_UPDATE=YES
+	fi
+	if [[ "$8" == -e ]]; then
+		PREREQUISITE_BUILD="$9"
+		SEARCH_DELTA_UPDATE=YES
+	fi
+
 	if [[ "$1" == "-d" || "$2" == "-d" || "$3" == "-d" || "$4" == "-d" || "$5" == "-d" || "$6" == "-d" || "$7" == "-d" || "$8" == "-d" || "$9" == "-d" ]]; then
 		ONLY_DOWNLOAD_DEVELOPER_BETA=YES
 		ONLY_DOWNLOAD_PUBLIC_BETA=NO
@@ -103,10 +138,16 @@ function setOption(){
 	if [[ "$1" == "-s" || "$2" == "-s" || "$3" == "-s" || "$4" == "-s" || "$5" == "-s" || "$6" == "-s" || "$7" == "-s" || "$8" == "-s" || "$9" == "-s" ]]; then
 		SEARCH_ONLY=YES
 	fi
+	if [[ "$1" == "-u" || "$2" == "-u" || "$3" == "-u" || "$4" == "-u" || "$5" == "-u" || "$6" == "-u" || "$7" == "-u" || "$8" == "-u" || "$9" == "-u" ]]; then
+		SHOW_URL_ONLY=YES
+	fi
 	if [[ "$1" == "--no-ssl" || "$2" == "--no-ssl" || "$3" == "--no-ssl" || "$4" == "--no-ssl" || "$5" == "--no-ssl" || "$6" == "--no-ssl" || "$7" == "--no-ssl" || "$8" == "--no-ssl" || "$9" == "--no-ssl" ]]; then
 		NO_SSL=YES
 	fi
 	if [[ -z "$MODEL" || -z "$VERSION" ]]; then
+		showHelpMessage
+	fi
+	if [[ "$SEARCH_DELTA_UPDATE" == YES && -z "$PREREQUISITE_BUILD" ]]; then
 		showHelpMessage
 	fi
 	OUTPUT_DIRECTORY="$(pwd)"
@@ -133,7 +174,9 @@ function setProjectPath(){
 }
 
 function searchDownloadURL(){
-	echo "Searching... (will take a long time)"
+	if [[ ! "$SHOW_URL_ONLY" == YES ]]; then
+		echo "Searching... (will take a long time)"
+	fi
 	if [[ "$ONLY_DOWNLOAD_PUBLIC_BETA" == YES ]]; then
 		URL="$PB_OTA"
 	elif [[ "$ONLY_DOWNLOAD_DEVELOPER_BETA" == YES ]]; then
@@ -179,6 +222,7 @@ function parseAsset(){
 	VALUE=
 	BUILD_NAME=
 	COUNT=0
+	FOUND_PREREQUISITE_CORRECTLY=NO
 	PASS_ONCE_0=NO
 	PASS_ONCE_1=NO
 	PASS_ONCE_2=NO
@@ -218,6 +262,7 @@ function parseAsset(){
 				else
 					BUILD_NAME=
 					COUNT=0
+					FOUND_PREREQUISITE_CORRECTLY=NO
 				fi
 				PASS_ONCE_6=NO
 			fi
@@ -245,16 +290,33 @@ function parseAsset(){
 				BUILD_NAME="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 				PASS_ONCE_2=NO
 			fi
-			if [[ "$VALUE" == "<key>SUDocumentationID</key>" && "$COUNT" == 1 ]]; then
-				PASS_ONCE_2=YES
+			if [[ "$VALUE" == "<key>SUDocumentationID</key>" ]]; then
+				if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
+					if [[ "$FOUND_PREREQUISITE_CORRECTLY" == YES ]]; then
+						PASS_ONCE_2=YES
+					else
+						COUNT=0
+						FOUND_PREREQUISITE_CORRECTLY=NO
+					fi
+				else
+					PASS_ONCE_2=YES
+				fi
 			fi
 			if [[ "$PASS_ONCE_1" == YES ]]; then
-				if [[ ! "$VALUE" == "<string>10A403</string>" && ! "$VALUE" == "<string>10A405</string>" && ! "$VALUE" == "<string>10A406</string>" && ! "$VALUE" == "<string>10A407</string>" ]]; then # for iOS 8.4.1
-					COUNT=0
+				if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
+					if [[ "$VALUE" == "<string>$PREREQUISITE_BUILD</string>" ]]; then
+						FOUND_PREREQUISITE_CORRECTLY=YES
+					else
+						COUNT=0
+					fi
+				else
+					if [[ ! "$VALUE" == "<string>10A403</string>" && ! "$VALUE" == "<string>10A405</string>" && ! "$VALUE" == "<string>10A406</string>" && ! "$VALUE" == "<string>10A407</string>" ]]; then # for iOS 8.4.1
+						COUNT=0
+					fi
 				fi
 				PASS_ONCE_1=NO
 			fi
-			if [[ "$VALUE" == "<key>PrerequisiteBuild</key>" && "$COUNT" == 1 ]]; then
+			if [[ "$VALUE" == "<key>PrerequisiteBuild</key>" ]]; then
 				PASS_ONCE_1=YES
 			fi
 		elif [[ "$COUNT" == 0 ]]; then
@@ -274,18 +336,27 @@ function parseAsset(){
 }
 
 function showSummary(){
-	showLines "*"
-	echo "SUMMARY"
-	showLines "-"
-	echo "Device name: $MODEL"
-	echo "Version: $VERSION ($BUILD_NAME)"
-	echo "Update URL: $DOWNLOAD_URL"
-	if [[ "$SEARCH_ONLY" == YES ]]; then
-		showLines "*"
-		quitTool 0
+	if [[ "$SHOW_URL_ONLY" == YES ]]; then
+		echo "$DOWNLOAD_URL"
 	else
-		echo "Output: $OUTPUT_DIRECTORY"
 		showLines "*"
+		echo "SUMMARY"
+		showLines "-"
+		echo "Device name: $MODEL"
+		echo "Version: $VERSION ($BUILD_NAME)"
+		if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
+			echo "Update type: delta"
+		else
+			echo "Update type: combo"
+		fi
+		echo "Update URL: $DOWNLOAD_URL"
+		if [[ ! "$SEARCH_ONLY" == YES ]]; then
+			echo "Output: $OUTPUT_DIRECTORY"
+		fi
+		showLines "*"
+	fi
+	if [[ "$SEARCH_ONLY" == YES ]]; then
+		quitTool 0
 	fi
 }
 
@@ -346,39 +417,37 @@ function downloadUpdate(){
 function extractUpdate(){
 	echo "Extracting... (1)"
 	if [[ "$VERBOSE" == YES ]]; then
-		unzip -o -j -d "$PROJECT_DIR" "$PROJECT_DIR/update.zip" "AssetData/payloadv2/payload"
+		unzip -o -d "$PROJECT_DIR" "$PROJECT_DIR/update.zip"
 	else
-		unzip -qq -o -j -d "$PROJECT_DIR" "$PROJECT_DIR/update.zip" "AssetData/payloadv2/payload"
+		unzip -qq -o -d "$PROJECT_DIR" "$PROJECT_DIR/update.zip"
 	fi
 	cd "$OUTPUT_DIRECTORY"
-	if [[ -f "$BUILD_NAME ($MODEL-$VERSION)" ]]; then
-		rm "$BUILD_NAME ($MODEL-$VERSION)"
-	fi
-	if [[ -f "$BUILD_NAME ($MODEL-$VERSION).ota" ]]; then
-		rm "$BUILD_NAME ($MODEL-$VERSION).ota"
-	fi
-	if [[ -f "$BUILD_NAME ($MODEL-$VERSION).tar" ]]; then
-		rm "$BUILD_NAME ($MODEL-$VERSION).tar"
-	fi
-	if [[ -d "$BUILD_NAME ($MODEL-$VERSION)" ]]; then
-		rm -rf "$BUILD_NAME ($MODEL-$VERSION)"
-	fi
-	if [[ -d "$BUILD_NAME ($MODEL-$VERSION).ota" ]]; then
-		rm -rf "$BUILD_NAME ($MODEL-$VERSION).ota"
-	fi
-	if [[ -d "$BUILD_NAME ($MODEL-$VERSION).tar" ]]; then
-		rm -rf "$BUILD_NAME ($MODEL-$VERSION).tar"
-	fi
-	mv "$PROJECT_DIR/payload" "$BUILD_NAME ($MODEL-$VERSION)"
 	echo "Extracting... (2)"
-	"$PROJECT_DIR/ota2tar/src/ota2tar" "$BUILD_NAME ($MODEL-$VERSION)"
-	if [[ -f "$BUILD_NAME ($MODEL-$VERSION).tar" ]]; then
-		rm "$BUILD_NAME ($MODEL-$VERSION)"
-		echo "Success! Check $OUTPUT_DIRECTORY/$BUILD_NAME ($MODEL-$VERSION).tar"
-		quitTool 0
-	else
+	if [[ -d "$PROJECT_DIR/AssetData/payloadv2/app_patches" ]]; then
+		if [[ -d "$MODEL-$VERSION-$BUILD_NAME-app_patches" || -f "$MODEL-$VERSION-$BUILD_NAME-app_patches" ]]; then
+			rm -rf "$MODEL-$VERSION-$BUILD_NAME-app_patches"
+		fi
+		mv "$PROJECT_DIR/AssetData/payloadv2/app_patches" "$MODEL-$VERSION-$BUILD_NAME-app_patches"
+	fi
+	if [[ -d "$PROJECT_DIR/AssetData/payloadv2/patches" ]]; then
+		if [[ -d "$MODEL-$VERSION-$BUILD_NAME-patches" || -f "$MODEL-$VERSION-$BUILD_NAME-patches" ]]; then
+			rm -rf "$MODEL-$VERSION-$BUILD_NAME-patches"
+		fi
+		mv "$PROJECT_DIR/AssetData/payloadv2/patches" "$MODEL-$VERSION-$BUILD_NAME-patches"
+	fi
+	if [[ -f "$PROJECT_DIR/AssetData/payloadv2/payload" ]]; then
+		if [[ -d "$MODEL-$VERSION-$BUILD_NAME-system" || -f "$MODEL-$VERSION-$BUILD_NAME-system" ]]; then
+			rm -rf "$MODEL-$VERSION-$BUILD_NAME-system"
+		fi
+		mv "$PROJECT_DIR/AssetData/payloadv2/payload" "$MODEL-$VERSION-$BUILD_NAME-system"
+		"$PROJECT_DIR/ota2tar/src/ota2tar" "$MODEL-$VERSION-$BUILD_NAME-system"
+		rm "$MODEL-$VERSION-$BUILD_NAME-system"
+	fi
+	if [[ ! -d "$MODEL-$VERSION-$BUILD_NAME-app_patches" && ! -d "$MODEL-$VERSION-$BUILD_NAME-patches" && ! -f "$MODEL-$VERSION-$BUILD_NAME-system.tar" ]]; then
 		echo "ERROR!"
 		quitTool 1
+	else
+		quitTool 0
 	fi
 }
 

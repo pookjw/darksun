@@ -12,13 +12,15 @@ darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires lib
 
 ## Usage
 
-	./darksun.sh [options...]
+	Usage: ./darksun.sh [options...]
 	Options:
-	-n		device identifier (see https://www.theiphonewiki.com/wiki/Models)
-	-v		iOS/watchOS version
-	-d		get Developer Beta Firmware (default: GM only)
-	-p		get Public Beta Firmware (default: GM only)
-	-s		search only
-	--verbose	run verbose mode
-	--no-ssl	no SSL mode
+	-n [name]		device identifier (see https://www.theiphonewiki.com/wiki/Models)
+	-v [version]		iOS/watchOS version
+	-e [prerequisite]	get delta update file (default: combo)
+	-d			get Developer Beta Firmware (default: GM only)
+	-p			get Public Beta Firmware (default: GM only)
+	-s			search only
+	-u			only show update URL on summary
+	--verbose		run verbose mode
+	--no-ssl		no SSL mode
 	example) ./darksun.sh -n iPod7,1 -v 10.3.3
