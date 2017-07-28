@@ -21,7 +21,7 @@ https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_Softwa
 # PB_OTA
 # - iOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=27
+TOOL_VERSION=28
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
@@ -435,18 +435,21 @@ function extractUpdate(){
 	if [[ -d "$PROJECT_DIR/AssetData/payloadv2/app_patches" ]]; then
 		if [[ -d "$MODEL-$VERSION-$BUILD_NAME-app_patches" || -f "$MODEL-$VERSION-$BUILD_NAME-app_patches" ]]; then
 			rm -rf "$MODEL-$VERSION-$BUILD_NAME-app_patches"
+			echo "**CAUTION: Removed $OUTPUT_DIRECTORY/"$MODEL-$VERSION-$BUILD_NAME-app_patches""
 		fi
 		mv "$PROJECT_DIR/AssetData/payloadv2/app_patches" "$MODEL-$VERSION-$BUILD_NAME-app_patches"
 	fi
 	if [[ -d "$PROJECT_DIR/AssetData/payloadv2/patches" ]]; then
 		if [[ -d "$MODEL-$VERSION-$BUILD_NAME-patches" || -f "$MODEL-$VERSION-$BUILD_NAME-patches" ]]; then
 			rm -rf "$MODEL-$VERSION-$BUILD_NAME-patches"
+			echo "**CAUTION: Removed $OUTPUT_DIRECTORY/"$MODEL-$VERSION-$BUILD_NAME-patches""
 		fi
 		mv "$PROJECT_DIR/AssetData/payloadv2/patches" "$MODEL-$VERSION-$BUILD_NAME-patches"
 	fi
 	if [[ -f "$PROJECT_DIR/AssetData/payloadv2/payload" ]]; then
 		if [[ -d "$MODEL-$VERSION-$BUILD_NAME-system" || -f "$MODEL-$VERSION-$BUILD_NAME-system" ]]; then
 			rm -rf "$MODEL-$VERSION-$BUILD_NAME-system"
+			echo "**CAUTION: Removed $OUTPUT_DIRECTORY/"$MODEL-$VERSION-$BUILD_NAME""
 		fi
 		mv "$PROJECT_DIR/AssetData/payloadv2/payload" "$MODEL-$VERSION-$BUILD_NAME-system"
 		"$PROJECT_DIR/ota2tar/src/ota2tar" "$MODEL-$VERSION-$BUILD_NAME-system"
@@ -456,6 +459,7 @@ function extractUpdate(){
 		echo "ERROR!"
 		quitTool 1
 	else
+		echo "Done."
 		quitTool 0
 	fi
 }
