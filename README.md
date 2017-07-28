@@ -23,4 +23,4 @@ darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires lib
 	-u			only show update URL on summary
 	--verbose		run verbose mode
 	--no-ssl		no SSL mode
-	example) ./darksun.sh -n iPod7,1 -v 10.3.3
+	--example		show command example

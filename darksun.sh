@@ -21,7 +21,7 @@ https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_Softwa
 # PB_OTA
 # - iOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=26
+TOOL_VERSION=27
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
@@ -36,11 +36,20 @@ function showHelpMessage(){
 	echo "-u			only show update URL on summary"
 	echo "--verbose		run verbose mode"
 	echo "--no-ssl		no SSL mode"
-	echo "example) ./darksun.sh -n iPod7,1 -v 10.3.3"
+	echo "--example		show command example"
 	quitTool 1
 }
 
 function setOption(){
+	if [[ "$1" == "--example" || "$2" == "--example" || "$3" == "--example" || "$4" == "--example" || "$5" == "--example" || "$6" == "--example" || "$7" == "--example" || "$8" == "--example" || "$9" == "--example" ]]; then
+		echo "getting iPod7,1_10.3.3 system:"
+		echo "$ ./darksun.sh -n iPod7,1 -v 10.3.3"
+		echo "getting patch/new file when updating 14E304 to 10.3.3:"
+		echo "$ ./darksun.sh -n iPod7,1 -v 10.3.3 -e 14E304"
+		echo "getting update url of iPod7,1_10.3.3:"
+		echo "$ ./darksun.sh -n iPod7,1 -v 10.3.3 -s -u"
+		quitTool 0
+	fi
 	if [[ "$1" == -n ]]; then
 		MODEL="$2"
 	fi
