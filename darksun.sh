@@ -21,7 +21,7 @@ https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_Softwa
 # PB_OTA
 # - iOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=30
+TOOL_VERSION=31
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
@@ -395,7 +395,7 @@ function buildBinary(){
 	cd ota2tar/src
 	make ota2tar # Requires libarchive
 	if [[ ! -f ota2tar ]]; then
-		echo "ERROR: Can't build ota2tar"
+		echo "ERROR: Can't build ota2tar. Did you install libarchive?"
 		quitTool 1
 	fi
 }
