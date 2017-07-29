@@ -21,7 +21,7 @@ https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_Softwa
 # PB_OTA
 # - iOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=29
+TOOL_VERSION=30
 
 function showHelpMessage(){
 	echo "darksun: get whole iOS/watchOS system (Version: $TOOL_VERSION)"
@@ -243,14 +243,14 @@ function parseAsset(){
 	PASS_ONCE_7=NO
 	PASS_ONCE_8=NO
 	FIRST_URL=
-	SECONT_URL=
+	SECOND_URL=
 	DOWNLOAD_URL=
 	for VALUE in $(cat "$PROJECT_DIR/catalog.xml"); do
 		if [[ "$COUNT" == 3 ]]; then
 			if [[ "$PASS_ONCE_8" == YES ]]; then
-				SECONT_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+				SECOND_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 				PASS_ONCE_8=NO
-				DOWNLOAD_URL="$FIRST_URL$SECONT_URL"
+				DOWNLOAD_URL="$FIRST_URL$SECOND_URL"
 				break
 			fi
 			if [[ "$VALUE" == "<key>__RelativePath</key>" ]]; then
@@ -433,26 +433,23 @@ function extractUpdate(){
 	fi
 	cd "$OUTPUT_DIRECTORY"
 	echo "Extracting... (2)"
-	if [[ -d "$PROJECT_DIR/AssetData/payloadv2/app_patches" ]]; then
-		if [[ -d "$MODEL-$VERSION-$BUILD_NAME-app_patches" || -f "$MODEL-$VERSION-$BUILD_NAME-app_patches" ]]; then
-			rm -rf "$MODEL-$VERSION-$BUILD_NAME-app_patches"
-			echo "**CAUTION: Removed $OUTPUT_DIRECTORY/"$MODEL-$VERSION-$BUILD_NAME-app_patches""
+	for FILE in app_patches links.txt patches payload removed.txt; do
+		if [[ -d "$PROJECT_DIR/AssetData/payloadv2/$FILE" || -f "$PROJECT_DIR/AssetData/payloadv2/$FILE" ]]; then
+			if [[ -d "$MODEL-$VERSION-$BUILD_NAME-$FILE" || -f "$MODEL-$VERSION-$BUILD_NAME-$FILE" ]]; then
+				rm -rf "$MODEL-$VERSION-$BUILD_NAME-$FILE"
+				echo "*** CAUTION: Removed $OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NAME-$FILE"
+			fi
+			mv "$PROJECT_DIR/AssetData/payloadv2/$FILE" "$MODEL-$VERSION-$BUILD_NAME-$FILE"
 		fi
-		mv "$PROJECT_DIR/AssetData/payloadv2/app_patches" "$MODEL-$VERSION-$BUILD_NAME-app_patches"
-	fi
-	if [[ -d "$PROJECT_DIR/AssetData/payloadv2/patches" ]]; then
-		if [[ -d "$MODEL-$VERSION-$BUILD_NAME-patches" || -f "$MODEL-$VERSION-$BUILD_NAME-patches" ]]; then
-			rm -rf "$MODEL-$VERSION-$BUILD_NAME-patches"
-			echo "**CAUTION: Removed $OUTPUT_DIRECTORY/"$MODEL-$VERSION-$BUILD_NAME-patches""
-		fi
-		mv "$PROJECT_DIR/AssetData/payloadv2/patches" "$MODEL-$VERSION-$BUILD_NAME-patches"
-	fi
-	if [[ -f "$PROJECT_DIR/AssetData/payloadv2/payload" ]]; then
-		if [[ -d "$MODEL-$VERSION-$BUILD_NAME-system" || -f "$MODEL-$VERSION-$BUILD_NAME-system" ]]; then
-			rm -rf "$MODEL-$VERSION-$BUILD_NAME-system"
-			echo "**CAUTION: Removed $OUTPUT_DIRECTORY/"$MODEL-$VERSION-$BUILD_NAME""
-		fi
-		mv "$PROJECT_DIR/AssetData/payloadv2/payload" "$MODEL-$VERSION-$BUILD_NAME-system"
+	done
+	if [[ -f "$MODEL-$VERSION-$BUILD_NAME-payload" ]]; then
+		for FILE in "$MODEL-$VERSION-$BUILD_NAME-system" "$MODEL-$VERSION-$BUILD_NAME-system.ota" "$MODEL-$VERSION-$BUILD_NAME-system.tar"; do
+			if [[ -d "$FILE" || -f "$FILE" ]]; then
+				rm -rf "$FILE"
+				echo "*** CAUTION: Removed $FILE"
+			fi
+		done
+		mv "$MODEL-$VERSION-$BUILD_NAME-payload" "$MODEL-$VERSION-$BUILD_NAME-system"
 		"$PROJECT_DIR/ota2tar/src/ota2tar" "$MODEL-$VERSION-$BUILD_NAME-system"
 		rm "$MODEL-$VERSION-$BUILD_NAME-system"
 	fi
