@@ -23,7 +23,7 @@ Tested on macOS, iOS. (Running on iOS requires jailbreak and dependencies. may h
 	Usage: ./darksun.sh [options...]
 	Options:
 	-n [name]		device identifier (see https://www.theiphonewiki.com/wiki/Models)
-	-v [version]		iOS/watchOS version
+	-v [version]		system version
 	-e [prerequisite]	get delta update file (default: combo)
 	-d			get Developer Beta Firmware (default: GM only)
 	-p			get Public Beta Firmware (default: GM only)
