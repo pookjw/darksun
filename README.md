@@ -2,13 +2,23 @@
 
 # darksun
 
-get whole iOS/watchOS system
-
-Only works with signed OTA version like 8.4.1, 9.3.5, 10.3.3 etc... Compatible with iOS 8/watchOS 3 or later.
+get whole file system
 
 Tested on macOS, iOS. (Running on iOS requires jailbreak and dependencies. may have to use `--no-ssl` option)
 
 darksun uses [emonti/ota2tar](https://github.com/emonti/ota2tar) so requires libarchive to run.
+
+## Compatiblity
+
+**Only works with signed OTA version like iOS 8.4.1, 9.3.5, 10.3.3 etc...**
+
+- iOS 8 or later
+
+- watchOS 3 or later
+
+- tvOS 10 or later
+
+- HomePod
 
 ## Usage
 
