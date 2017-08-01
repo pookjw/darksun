@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareU
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=33
+TOOL_VERSION=34
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -384,7 +384,7 @@ function showSummary(){
 		echo "$DOWNLOAD_URL"
 	else
 		showLines "*"
-		echo "SUMMARY"
+		echo "SUMMARY (darksun-$TOOL_VERSION)"
 		showLines "-"
 		echo "Device name: $MODEL"
 		echo "Version: $VERSION ($BUILD_NAME)"
@@ -494,6 +494,7 @@ function extractUpdate(){
 		done
 		if [[ "$VERBOSE" == YES ]]; then
 			"$PROJECT_DIR/OTApack/pbzx" < "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-payload" > "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz"
+			xz --decompress "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz"
 		else
 			if [[ -f "$PROJECT_DIR/script" ]]; then
 				rm "$PROJECT_DIR/script"
@@ -501,11 +502,15 @@ function extractUpdate(){
 			echo "\"$PROJECT_DIR/OTApack/pbzx\" < \"$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-payload\" > \"$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz\"" >> "$PROJECT_DIR/script"
 			chmod +x "$PROJECT_DIR/script"
 			"$PROJECT_DIR/script" > /dev/null 2>&1
+			xz --decompress "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz" > /dev/null 2>&1
 		fi
-		xz --decompress "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz"
 		mkdir "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-system"
 		cd "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-system"
-		"$PROJECT_DIR/OTApack/otaa" -e '*' "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb"
+		if [[ "$VERBOSE" == YES ]]; then
+			"$PROJECT_DIR/OTApack/otaa" -e '*' "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb"
+		else
+			"$PROJECT_DIR/OTApack/otaa" -e '*' "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb" > /dev/null 2>&1
+		fi
 		rm "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-payload"
 		rm "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb"
 	fi

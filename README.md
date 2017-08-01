@@ -8,7 +8,7 @@ Tested on macOS, iOS. (Running on iOS requires jailbreak and dependencies. may h
 
 ## Compatiblity
 
-**Only works with signed OTA version like iOS 8.4.1, 9.3.5, 10.3.3 etc...**
+Only works with signed OTA version like iOS 8.4.1, 9.3.5, 10.3.3, etc...
 
 - iOS 8 or later
 
