@@ -4,7 +4,7 @@
 
 get whole file system
 
-Tested on macOS, iOS. (Running on iOS requires jailbreak and dependencies. may have to use `--no-ssl` option)
+Tested on macOS.
 
 ## Compatiblity
 
