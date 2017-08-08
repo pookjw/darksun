@@ -31,7 +31,6 @@ Only works with signed OTA version like iOS 8.4.1, 9.3.5, 10.3.3, etc...
 	-u			only show update URL on summary
 	--verbose		run verbose mode
 	--no-ssl		no SSL mode
-	--example		show command example
 
 ## Example
 
