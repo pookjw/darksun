@@ -4,7 +4,7 @@
 
 get whole file system
 
-Tested on macOS.
+Tested on macOS. Happy reversing. :)
 
 ## Compatiblity
 
