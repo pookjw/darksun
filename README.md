@@ -54,6 +54,7 @@ Only works with signed OTA version like iOS 8.4.1, 9.3.5, 10.3.3, etc...
 ▼ search only
 	
 	$ ./darksun.sh -n iPod7,1 -v 10.3.3 -s
+	Searching... (will take a long time)
 	*************************************************
 	SUMMARY (darksun-XX)
 	-------------------------------------------------
