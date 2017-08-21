@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareU
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=36
+TOOL_VERSION=37
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -226,7 +226,11 @@ function searchDownloadURL(){
 		fi
 	done
 	if [[ -z "$DOWNLOAD_URL" ]]; then
-		echo "$MODEL | $VERSION not found."
+		if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
+			echo "$MODEL-$VERSION (pre: $PREREQUISITE_BUILD) not found."
+		else
+			echo "$MODEL-$VERSION not found."
+		fi
 		#echo "$COUNT" "$PASS_ONCE_0" "$PASS_ONCE_1" "$PASS_ONCE_2" "$PASS_ONCE_3" "$PASS_ONCE_4" "$PASS_ONCE_5" "$PASS_ONCE_6" "$PASS_ONCE_7" "$PASS_ONCE_8" "$PASS_ONCE_9" "$BUILD_NAME_VALUE" "$BUILD_NUMBER_VALUE"
 		quitTool 1
 	fi
