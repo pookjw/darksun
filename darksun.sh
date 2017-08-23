@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareU
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=37
+TOOL_VERSION=38
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -48,6 +48,7 @@ function showHelpMessage(){
 	echo "-u			only show update URL on summary"
 	echo "--verbose		run verbose mode"
 	echo "--no-ssl		no SSL mode"
+	echo "--do-not-clean		do not clean temp dir on quit"
 	quitTool 1
 }
 
@@ -155,6 +156,9 @@ function setOption(){
 	if [[ "$1" == "--no-ssl" || "$2" == "--no-ssl" || "$3" == "--no-ssl" || "$4" == "--no-ssl" || "$5" == "--no-ssl" || "$6" == "--no-ssl" || "$7" == "--no-ssl" || "$8" == "--no-ssl" || "$9" == "--no-ssl" ]]; then
 		NO_SSL=YES
 	fi
+	if [[ "$1" == "--do-not-clean" || "$2" == "--do-not-clean" || "$3" == "--do-not-clean" || "$4" == "--do-not-clean" || "$5" == "--do-not-clean" || "$6" == "--do-not-clean" || "$7" == "--do-not-clean" || "$8" == "--do-not-clean" || "$9" == "--do-not-clean" ]]; then
+		DO_NOT_CLEAN_TEMP_DIR=YES
+	fi
 	if [[ -z "$MODEL" || -z "$VERSION" ]]; then
 		showHelpMessage
 	fi
@@ -254,6 +258,7 @@ function parseAsset(){
 	PASS_ONCE_7=NO
 	PASS_ONCE_8=NO
 	PASS_ONCE_9=NO
+	PASS_ONCE_10=NO
 	FIRST_URL=
 	SECOND_URL=
 	DOWNLOAD_URL=
@@ -262,22 +267,30 @@ function parseAsset(){
 			echo "$VALUE"
 		fi
 		if [[ "$COUNT" == 3 ]]; then
-			if [[ "$PASS_ONCE_9" == YES ]]; then
+			if [[ "$PASS_ONCE_10" == YES ]]; then
 				SECOND_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
-				PASS_ONCE_9=NO
+				PASS_ONCE_10=NO
 				DOWNLOAD_URL="$FIRST_URL$SECOND_URL"
 				break
 			fi
 			if [[ "$VALUE" == "<key>__RelativePath</key>" ]]; then
-				PASS_ONCE_9=YES
+				PASS_ONCE_10=YES
 			fi
 		elif [[ "$COUNT" == 2 ]]; then
-			if [[ "$PASS_ONCE_8" == YES ]]; then
+			if [[ "$PASS_ONCE_9" == YES ]]; then
 				FIRST_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
-				PASS_ONCE_8=NO
+				PASS_ONCE_9=NO
 				COUNT=3
 			fi
 			if [[ "$VALUE" == "<key>__BaseURL</key>" ]]; then
+				PASS_ONCE_9=YES
+			fi
+			if [[ "$PASS_ONCE_8" == YES ]]; then
+				PASS_ONCE_8=NO
+				DOWNLOAD_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+				break
+			fi
+			if [[ "$VALUE" == "<key>RealUpdateURL</key>" ]]; then # for iOS 7.1.2 (pre: 7.1.1_11D201)
 				PASS_ONCE_8=YES
 			fi
 		elif [[ "$COUNT" == 1 ]]; then
@@ -338,7 +351,7 @@ function parseAsset(){
 						BUILD_NUMBER_VALUE=
 					fi
 				else
-					if [[ ! "$VALUE" == "<string>10A403</string>" && ! "$VALUE" == "<string>10A405</string>" && ! "$VALUE" == "<string>10A406</string>" && ! "$VALUE" == "<string>10A407</string>" ]]; then # for iOS 8.4.1
+					if [[ ! "$VALUE" == "<string>10A403</string>" && ! "$VALUE" == "<string>10A405</string>" && ! "$VALUE" == "<string>10A406</string>" && ! "$VALUE" == "<string>10A407</string>" ]]; then # for iOS 7.1.2, 8.4.1
 						COUNT=0
 						BUILD_NUMBER_VALUE=
 					fi
@@ -471,51 +484,55 @@ function extractUpdate(){
 	fi
 	cd "$OUTPUT_DIRECTORY"
 	echo "Extracting... (2)"
-	for FILE in app_patches links.txt patches payload removed.txt; do
-		if [[ -d "$PROJECT_DIR/update/AssetData/payloadv2/$FILE" || -f "$PROJECT_DIR/update/AssetData/payloadv2/$FILE" ]]; then
+	for FILE in added replace patches; do
+		if [[ -d "$PROJECT_DIR/update/AssetData/payload/$FILE" || -f "$PROJECT_DIR/update/AssetData/payload/$FILE" ]]; then
 			if [[ -d "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-$FILE" || -f "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-$FILE" ]]; then
 				rm -rf "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-$FILE"
 				echo "*** CAUTION: Removed $OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-$FILE"
 			fi
-			mv "$PROJECT_DIR/update/AssetData/payloadv2/$FILE" "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-$FILE"
+			mv "$PROJECT_DIR/update/AssetData/payload/$FILE" "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-$FILE"
 		fi
 	done
-	if [[ -f "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-payload" ]]; then
-		for FILE in "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-system" "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz" "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb"; do
-			if [[ -d "$FILE" || -f "$FILE" ]]; then
-				rm -rf "$FILE"
-				echo "*** CAUTION: Removed $OUTPUT_DIRECTORY/$FILE"
+	for FILE in app_patches links.txt patches payload removed.txt; do
+		if [[ -d "$PROJECT_DIR/update/AssetData/payloadv2/$FILE" || -f "$PROJECT_DIR/update/AssetData/payloadv2/$FILE" ]]; then
+			if [[ -d "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-$FILE" || -f "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-$FILE" ]]; then
+				rm -rf "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-$FILE"
+				echo "*** CAUTION: Removed $OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-$FILE"
+			fi
+			mv "$PROJECT_DIR/update/AssetData/payloadv2/$FILE" "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-$FILE"
+		fi
+	done
+	if [[ -f "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-payload" ]]; then
+		for FILE in "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-system"; do
+			if [[ -d "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-system" || -f "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-system" ]]; then
+				rm -rf "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-system"
+				echo "*** CAUTION: Removed $OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-system"
 			fi
 		done
+		mkdir "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-system"
 		if [[ "$VERBOSE" == YES ]]; then
-			"$PROJECT_DIR/OTApack/pbzx" < "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-payload" > "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz"
-			xz --decompress "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz"
+			"$PROJECT_DIR/OTApack/pbzx" < "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-payload" > "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-pb.xz"
+			xz --decompress "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-pb.xz"
 		else
 			if [[ -f "$PROJECT_DIR/script" ]]; then
 				rm "$PROJECT_DIR/script"
 			fi
-			echo "\"$PROJECT_DIR/OTApack/pbzx\" < \"$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-payload\" > \"$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz\"" >> "$PROJECT_DIR/script"
+			echo "\"$PROJECT_DIR/OTApack/pbzx\" < \"$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-payload\" > \"$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-pb.xz\"" >> "$PROJECT_DIR/script"
 			chmod +x "$PROJECT_DIR/script"
 			"$PROJECT_DIR/script" > /dev/null 2>&1
-			xz --decompress "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb.xz" > /dev/null 2>&1
+			xz --decompress "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-pb.xz" > /dev/null 2>&1
 		fi
-		mkdir "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-system"
-		cd "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-system"
+		cd "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-system"
 		if [[ "$VERBOSE" == YES ]]; then
-			"$PROJECT_DIR/OTApack/otaa" -e '*' "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb"
+			"$PROJECT_DIR/OTApack/otaa" -e '*' "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-pb"
 		else
-			"$PROJECT_DIR/OTApack/otaa" -e '*' "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb" > /dev/null 2>&1
+			"$PROJECT_DIR/OTApack/otaa" -e '*' "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-pb" > /dev/null 2>&1
 		fi
-		rm "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-payload"
-		rm "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-pb"
+		rm "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-payload"
+		rm "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-pb"
 	fi
-	if [[ ! -d "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-app_patches" && ! -d "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-patches" && ! -d "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-system" ]]; then
-		echo "ERROR!"
-		quitTool 1
-	else
-		echo "Done."
-		quitTool 0
-	fi
+	echo "Script was done."
+	quitTool 0
 }
 
 function showLines(){
@@ -531,7 +548,7 @@ function showLines(){
 }
 
 function quitTool(){
-	if [[ "$1" == 0 ]]; then
+	if [[ "$1" == 0 && ! "$DO_NOT_CLEAN_TEMP_DIR" == YES ]]; then
 		if [[ -d "$PROJECT_DIR" && ! -z "$PROJECT_DIR" ]]; then
 			rm -rf "$PROJECT_DIR"
 		fi

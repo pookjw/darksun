@@ -8,15 +8,17 @@ Tested on macOS. Happy reversing. :)
 
 ## Compatiblity
 
-Only works with signed OTA version like iOS 8.4.1, 9.3.5, 10.3.3, etc...
+Only works with signed OTA version like iOS 6.1.3, 7.1.2, 8.4.1, 9.3.5, 10.3.3, etc...
 
-- iOS 8 or later
+- iOS 6 or later
 
 - watchOS 3 or later
 
 - tvOS 10 or later
 
 - HomePod
+
+exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not supported.
 
 ## Usage
 
@@ -31,6 +33,7 @@ Only works with signed OTA version like iOS 8.4.1, 9.3.5, 10.3.3, etc...
 	-u			only show update URL on summary
 	--verbose		run verbose mode
 	--no-ssl		no SSL mode
+	--do-not-clean		do not clean temp dir on quit
 
 ## Example
 
