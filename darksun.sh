@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareU
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=38
+TOOL_VERSION=39
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -414,7 +414,7 @@ function showSummary(){
 }
 
 function downloadBinary(){
-	echo "Downloading OTApack... (http://newosxbook.com/articles/OTA3.html)"
+	echo "Downloading OTApack for extracting update file... (http://newosxbook.com/articles/OTA3.html)"
 	for FILE in OTApack OTApack.tar; do
 		if [[ -d "$PROJECT_DIR/$FILE" || -f "$PROJECT_DIR/$FILE" ]]; then
 			rm -rf "$PROJECT_DIR/$FILE"
