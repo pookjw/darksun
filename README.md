@@ -26,7 +26,7 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 	Options:
 	-n [name]		device identifier (see https://www.theiphonewiki.com/wiki/Models)
 	-v [version]		system version
-	-e [prerequisite]	get delta update file (default: combo)
+	-e [prerequisite]	get Short update file (default: Full)
 	-d			get Developer Beta Firmware (default: GM only)
 	-p			get Public Beta Firmware (default: GM only)
 	-s			search only
@@ -63,7 +63,7 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 	Device name: iPod7,1
 	Version: 10.3.3 (iOS1033GM)
 	Build: 14G60
-	Update type: combo
+	Update type: Full
 	Update URL: http://appldnld.apple.com/ios10.3.3/091-23228-20170719-B311CB1A-697B-11E7-9148-5E9500BA0AE3/com_apple_MobileAsset_SoftwareUpdate/b9fa0dc04dcefea4845c9ceeb2e7e80efc9e9ee6.zip
 	*************************************************
 

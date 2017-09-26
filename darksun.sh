@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareU
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=39
+TOOL_VERSION=40
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -41,7 +41,7 @@ function showHelpMessage(){
 	echo "Options:"
 	echo "-n [name]		device identifier (see https://www.theiphonewiki.com/wiki/Models)"
 	echo "-v [version]		system version"
-	echo "-e [prerequisite]	get delta update file (default: combo)"
+	echo "-e [prerequisite]	get Short update file (default: Full)"
 	echo "-d			get Developer Beta Firmware (default: GM only)"
 	echo "-p			get Public Beta Firmware (default: GM only)"
 	echo "-s			search only"
@@ -398,9 +398,9 @@ function showSummary(){
 		echo "Build: $BUILD_NUMBER"
 		if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
 			echo "Prerequisite: $PREREQUISITE_BUILD"
-			echo "Update type: delta"
+			echo "Update type: Short"
 		else
-			echo "Update type: combo"
+			echo "Update type: Full"
 		fi
 		echo "Update URL: $DOWNLOAD_URL"
 		if [[ ! "$SEARCH_ONLY" == YES ]]; then
