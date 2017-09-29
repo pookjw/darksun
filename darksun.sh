@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareU
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=40
+TOOL_VERSION=41
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -44,6 +44,7 @@ function showHelpMessage(){
 	echo "-e [prerequisite]	get Short update file (default: Full)"
 	echo "-d			get Developer Beta Firmware (default: GM only)"
 	echo "-p			get Public Beta Firmware (default: GM only)"
+	echo "-i			run interface mode"
 	echo "-s			search only"
 	echo "-u			only show update URL on summary"
 	echo "--verbose		run verbose mode"
@@ -135,40 +136,68 @@ function setOption(){
 		PREREQUISITE_BUILD="$9"
 		SEARCH_DELTA_UPDATE=YES
 	fi
+	if [[ -z "$SEARCH_DELTA_UPDATE" ]]; then
+		SEARCH_DELTA_UPDATE=NO
+	fi
 
+	if [[ "$1" == "-i" || "$2" == "-i" || "$3" == "-i" || "$4" == "-i" || "$5" == "-i" || "$6" == "-i" || "$7" == "-i" || "$8" == "-i" || "$9" == "-i" ]]; then
+		INTERFACE_MODE=YES
+	else
+		INTERFACE_MODE=NO
+	fi
 	if [[ "$1" == "-d" || "$2" == "-d" || "$3" == "-d" || "$4" == "-d" || "$5" == "-d" || "$6" == "-d" || "$7" == "-d" || "$8" == "-d" || "$9" == "-d" ]]; then
-		ONLY_DOWNLOAD_DEVELOPER_BETA=YES
-		ONLY_DOWNLOAD_PUBLIC_BETA=NO
+		OTA_PROFILE=DEVELOPER
 	fi
 	if [[ "$1" == "-p" || "$2" == "-p" || "$3" == "-p" || "$4" == "-p" || "$5" == "-p" || "$6" == "-p" || "$7" == "-p" || "$8" == "-p" || "$9" == "-p" ]]; then
-		ONLY_DOWNLOAD_DEVELOPER_BETA=NO
-		ONLY_DOWNLOAD_PUBLIC_BETA=YES
+		OTA_PROFILE=PUBLIC
+	fi
+	if [[ -z "$OTA_PROFILE" ]]; then
+		OTA_PROFILE=GM
 	fi
 	if [[ "$1" == "--verbose" || "$2" == "--verbose" || "$3" == "--verbose" || "$4" == "--verbose" || "$5" == "--verbose" || "$6" == "--verbose" || "$7" == "--verbose" || "$8" == "--verbose" || "$9" == "--verbose" ]]; then
 		VERBOSE=YES
+	else
+		VERBOSE=NO
 	fi
 	if [[ "$1" == "-s" || "$2" == "-s" || "$3" == "-s" || "$4" == "-s" || "$5" == "-s" || "$6" == "-s" || "$7" == "-s" || "$8" == "-s" || "$9" == "-s" ]]; then
 		SEARCH_ONLY=YES
+	else
+		SEARCH_ONLY=NO
 	fi
 	if [[ "$1" == "-u" || "$2" == "-u" || "$3" == "-u" || "$4" == "-u" || "$5" == "-u" || "$6" == "-u" || "$7" == "-u" || "$8" == "-u" || "$9" == "-u" ]]; then
 		SHOW_URL_ONLY=YES
+	else
+		SHOW_URL_ONLY=NO
 	fi
 	if [[ "$1" == "--no-ssl" || "$2" == "--no-ssl" || "$3" == "--no-ssl" || "$4" == "--no-ssl" || "$5" == "--no-ssl" || "$6" == "--no-ssl" || "$7" == "--no-ssl" || "$8" == "--no-ssl" || "$9" == "--no-ssl" ]]; then
 		NO_SSL=YES
+	else
+		NO_SSL=NO
 	fi
 	if [[ "$1" == "--do-not-clean" || "$2" == "--do-not-clean" || "$3" == "--do-not-clean" || "$4" == "--do-not-clean" || "$5" == "--do-not-clean" || "$6" == "--do-not-clean" || "$7" == "--do-not-clean" || "$8" == "--do-not-clean" || "$9" == "--do-not-clean" ]]; then
 		DO_NOT_CLEAN_TEMP_DIR=YES
+	else
+		DO_NOT_CLEAN_TEMP_DIR=NO
 	fi
-	if [[ -z "$MODEL" || -z "$VERSION" ]]; then
-		showHelpMessage
+	if [[ "$INTERFACE_MODE" == YES ]]; then
+		TITLE_NUM=0
 	fi
-	if [[ "$SEARCH_DELTA_UPDATE" == YES && -z "$PREREQUISITE_BUILD" ]]; then
-		showHelpMessage
+	if [[ ! "$INTERFACE_MODE" == YES ]]; then
+		if [[ -z "$MODEL" || -z "$VERSION" ]]; then
+			showHelpMessage
+		fi
+		if [[ "$SEARCH_DELTA_UPDATE" == YES && -z "$PREREQUISITE_BUILD" ]]; then
+			showHelpMessage
+		fi
 	fi
 	OUTPUT_DIRECTORY="$(pwd)"
 	if [[ ! -d "$OUTPUT_DIRECTORY" ]]; then
-		echo "$OUTPUT_DIRECTORY: No such file or directory"
-		quitTool 1
+		if [[ "$INTERFACE_MODE" == YES ]]; then
+			OUTPUT_DIRECTORY=
+		else
+			echo "$OUTPUT_DIRECTORY: No such file or directory"
+			quitTool 1
+		fi
 	fi
 }
 
@@ -186,17 +215,227 @@ function setProjectPath(){
 			break
 		fi
 	done
+	if [[ "$INTERFACE_MODE" == YES ]]; then
+		mkdir -p "$PROJECT_DIR/TitleBar"
+	fi
+}
+
+function showInterface(){
+	addTitleBar "Home"
+	while(true); do
+		clear
+		showLines "*"
+		showTitleBar
+		showLines "-"
+		if [[ -z "$MODEL" ]]; then
+			echo "(1) device: (undefined)"
+		else
+			echo "(1) device: $MODEL"
+		fi
+		if [[ -z "$VERSION" ]]; then
+			echo "(2) version: (undefined)"
+		else
+			echo "(2) version: $VERSION"
+		fi
+		if [[ -z "$OUTPUT_DIRECTORY" ]]; then
+			echo "(3) output: (undefined)"
+		else
+			echo "(3) output: $OUTPUT_DIRECTORY"
+		fi
+		if [[ -z "$OTA_PROFILE" ]]; then
+			echo "(4) profile: (undefined)"
+		else
+			echo "(4) profile: $OTA_PROFILE"
+		fi
+		echo "(5) short(delta): $SEARCH_DELTA_UPDATE"
+		if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
+			if [[ -z "$PREREQUISITE_BUILD" ]]; then
+				echo "(6) prerequisite: (undefined)"
+			else
+				echo "(6) prerequisite: $PREREQUISITE_BUILD"
+			fi
+		fi
+		showLines "-"
+		if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
+			echo "Available commands: 1~6, start, debug, info, exit"
+		else
+			echo "Available commands: 1~5, start, debug, info, exit"
+		fi
+		showLines "*"
+		read -p "- " ANSWER
+
+		if [[ "$ANSWER" == 1 ]]; then
+			read -p "MODEL=" MODEL
+		elif [[ "$ANSWER" == 2 ]]; then
+			read -p "VERSION=" VERSION
+		elif [[ "$ANSWER" == 3 ]]; then
+			read -p "OUTPUT_DIRECTORY=" OUTPUT_DIRECTORY
+			if [[ -z "$OUTPUT_DIRECTORY" ]]; then
+				:
+			elif [[ ! -d "$OUTPUT_DIRECTORY" ]]; then
+				echo "$OUTPUT_DIRECTORY: No such directory."
+				OUTPUT_DIRECTORY=
+				showPA2C
+			fi
+		elif [[ "$ANSWER" == 4 ]]; then
+			addTitleBar "Select Profile"
+			while(true); do
+				clear
+				showLines "*"
+				showTitleBar
+				showLines "-"
+				echo "(1) GM"
+				echo "(2) DEVELOPER"
+				echo "(3) PUBLIC"
+				showLines "-"
+				echo "Available commands: 1~3, break, exit"
+				showLines "*"
+				read -p "- " ANSWER
+
+				if [[ "$ANSWER" == 1 ]]; then
+					OTA_PROFILE=GM
+					backTitleBar
+					break
+				elif [[ "$ANSWER" == 2 ]]; then
+					OTA_PROFILE=DEVELOPER
+					backTitleBar
+					break
+				elif [[ "$ANSWER" == 3 ]]; then
+					OTA_PROFILE=PUBLIC
+					backTitleBar
+					break
+				elif [[ "$ANSWER" == break ]]; then
+					backTitleBar
+					break
+				elif [[ "$ANSWER" == exit ]]; then
+					quitTool 0
+				elif [[ -z "$ANSWER" ]]; then
+					:
+				else
+					echo "$ANSWER: Command not found."
+					showPA2C
+				fi
+			done
+		elif [[ "$ANSWER" == 5 ]]; then
+			if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
+				SEARCH_DELTA_UPDATE=NO
+				PREREQUISITE_BUILD=
+			else
+				SEARCH_DELTA_UPDATE=YES
+			fi
+		elif [[ "$ANSWER" == 6 && "$SEARCH_DELTA_UPDATE" == YES ]]; then
+			read -p "PREREQUISITE_BUILD=" PREREQUISITE_BUILD
+		elif [[ "$ANSWER" == start ]]; then
+			if [[ -z "$MODEL" || -z "$VERSION" || -z "$OUTPUT_DIRECTORY" ]]; then
+				echo "Please define all values."
+				showPA2C
+			else
+				if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
+					if [[ -z "$PREREQUISITE_BUILD" ]]; then
+						echo "Please define all values."
+						showPA2C
+					else
+						backTitleBar
+						break
+					fi
+				else
+					backTitleBar
+					break
+				fi
+			fi
+		elif [[ "$ANSWER" == debug ]]; then
+			addTitleBar "Debug Settings"
+			while(true); do
+				clear
+				showLines "*"
+				showTitleBar
+				showLines "-"
+				echo "(1) search only: $SEARCH_ONLY"
+				echo "(2) url only on summary: $SHOW_URL_ONLY"
+				echo "(3) verbose: $VERBOSE"
+				echo "(4) no ssl: $NO_SSL"
+				echo "(5) do not clean: $DO_NOT_CLEAN_TEMP_DIR"
+				showLines "-"
+				echo "Available commands: 1~5, break, exit"
+				showLines "*"
+
+				read -p "- " ANSWER
+				if [[ "$ANSWER" == 1 ]]; then
+					if [[ "$SEARCH_ONLY" == YES ]]; then
+						SEARCH_ONLY=NO
+					else
+						SEARCH_ONLY=YES
+					fi
+				elif [[ "$ANSWER" == 2 ]]; then
+					if [[ "$SHOW_URL_ONLY" == YES ]]; then
+						SHOW_URL_ONLY=NO
+					else
+						SHOW_URL_ONLY=YES
+					fi
+				elif [[ "$ANSWER" == 3 ]]; then
+					if [[ "$VERBOSE" == YES ]]; then
+						VERBOSE=NO
+					else
+						VERBOSE=YES
+					fi
+				elif [[ "$ANSWER" == 4 ]]; then
+					if [[ "$NO_SSL" == YES ]]; then
+						NO_SSL=NO
+					else
+						NO_SSL=YES
+					fi
+				elif [[ "$ANSWER" == 5 ]]; then
+					if [[ "$DO_NOT_CLEAN_TEMP_DIR" == YES ]]; then
+						DO_NOT_CLEAN_TEMP_DIR=NO
+					else
+						DO_NOT_CLEAN_TEMP_DIR=YES
+					fi
+				elif [[ "$ANSWER" == break ]]; then
+					backTitleBar
+					break
+				elif [[ "$ANSWER" == exit ]]; then
+					quitTool 0
+				elif [[ -z "$ANSWER" ]]; then
+					:
+				else
+					echo "$ANSWER: Command not found."
+					showPA2C
+				fi
+			done
+		elif [[ "$ANSWER" == info ]]; then
+			addTitleBar "Info"
+			clear
+			showLines "*"
+			showTitleBar
+			showLines "-"
+			echo "darksun (Version: $TOOL_VERSION)"
+			echo "developed by pookjw (Twitter: @pookjw)"
+			echo
+			echo "GitHub: https://github.com/pookjw/darksun"
+			echo "darksun uses OTAPack (http://newosxbook.com/articles/OTA3.html)"
+			showLines "*"
+			showPA2C
+			backTitleBar
+		elif [[ "$ANSWER" == exit ]]; then
+			quitTool 0
+		elif [[ -z "$ANSWER" ]]; then
+			:
+		else
+			echo "$ANSWER: Command not found."
+			showPA2C
+		fi
+	done
 }
 
 function searchDownloadURL(){
 	if [[ ! "$SHOW_URL_ONLY" == YES ]]; then
 		echo "Searching... (will take a long time)"
 	fi
-	if [[ "$ONLY_DOWNLOAD_PUBLIC_BETA" == YES ]]; then
-		URL="$PB_OTA"
-	elif [[ "$ONLY_DOWNLOAD_DEVELOPER_BETA" == YES ]]; then
+	if [[ "$OTA_PROFILE" == DEVELOPER ]]; then
 		URL="$DB_OTA"
-	else
+	elif [[ "$OTA_PROFILE" == PUBLIC ]]; then
+		URL="$PB_OTA"
+	elif [[ "$OTA_PROFILE" == GM ]]; then
 		URL="$GM_OTA"
 	fi
 	for OTA_URL in $URL; do
@@ -547,6 +786,36 @@ function showLines(){
 	fi
 }
 
+function showPA2C(){
+	read -s -n 1 -p "Press any key to continue..."
+	echo
+}
+
+function showTitleBar(){
+	if [[ -f "$PROJECT_DIR/TitleBar/$TITLE_NUM" ]]; then
+		cat "$PROJECT_DIR/TitleBar/$TITLE_NUM"
+	fi
+}
+
+function addTitleBar(){
+	if [[ ! -z "$1" ]]; then
+		if [[ -z "$(ls "$PROJECT_DIR/TitleBar")" ]]; then
+			TITLE_NUM=$((${TITLE_NUM}+1))
+			echo "$1" >> "$PROJECT_DIR/TitleBar/${TITLE_NUM}"
+		else
+			echo "$(showTitleBar) > ${1}" >> "$PROJECT_DIR/TitleBar/$((${TITLE_NUM}+1))"
+			TITLE_NUM=$((${TITLE_NUM}+1))
+		fi
+	fi
+}
+
+function backTitleBar(){
+	if [[ -f "$PROJECT_DIR/TitleBar/${TITLE_NUM}" ]]; then
+		rm "$PROJECT_DIR/TitleBar/${TITLE_NUM}"
+	fi
+	TITLE_NUM=$((${TITLE_NUM}-1))
+}
+
 function quitTool(){
 	if [[ "$1" == 0 && ! "$DO_NOT_CLEAN_TEMP_DIR" == YES ]]; then
 		if [[ -d "$PROJECT_DIR" && ! -z "$PROJECT_DIR" ]]; then
@@ -560,6 +829,9 @@ function quitTool(){
 
 setOption "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 setProjectPath
+if [[ "$INTERFACE_MODE" == YES ]]; then
+	showInterface
+fi
 searchDownloadURL
 showSummary
 downloadBinary
