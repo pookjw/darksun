@@ -29,6 +29,7 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 	-e [prerequisite]	get Short update file (default: Full)
 	-d			get Developer Beta Firmware (default: GM only)
 	-p			get Public Beta Firmware (default: GM only)
+	-i			run interface mode
 	-s			search only
 	-u			only show update URL on summary
 	--verbose		run verbose mode
