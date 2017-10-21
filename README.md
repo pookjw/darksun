@@ -29,7 +29,7 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 	-e [prerequisite]	get Short update file (default: Full)
 	-d			get Developer Beta Firmware (default: GM only)
 	-p			get Public Beta Firmware (default: GM only)
-	-c			get Firmware from OTA Profile(.mobileconfig) (default: GM only)
+	-c [mobileconfig]	get Firmware from OTA Profile(.mobileconfig) (default: GM only)
 	-i			run interface mode
 	-s			search only
 	-u			only show update URL on summary
@@ -47,13 +47,17 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 
 	$ ./darksun.sh -n iPod7,1 -v 10.3.3 -e 14E304
 
-▼ get iPod7,1_11.0 Developer Beta file system
+▼ get iPod7,1_11.1 Developer Beta file system
 
-	$ ./darksun.sh -n iPod7,1 -v 11.0 -d
+	$ ./darksun.sh -n iPod7,1 -v 11.1 -d
 
-▼ get iPod7,1_11.0 Public Beta file system
+▼ get iPod7,1_11.1 Public Beta file system
 
-	$ ./darksun.sh -n iPod7,1 -v 11.0 -p
+	$ ./darksun.sh -n iPod7,1 -v 11.1 -p
+
+▼ get iPod7,1_11.1 file system from OTA Profile (.mobileconfig)
+
+	$ ./darksun.sh -n iPod7,1 -v 11.1 -c [mobileconfig]
 
 ▼ search only
 	

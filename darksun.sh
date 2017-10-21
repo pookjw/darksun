@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareU
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=43
+TOOL_VERSION=44
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -44,7 +44,7 @@ function showHelpMessage(){
 	echo "-e [prerequisite]	get Short update file (default: Full)"
 	echo "-d			get Developer Beta Firmware (default: GM only)"
 	echo "-p			get Public Beta Firmware (default: GM only)"
-	echo "-c			get Firmware from OTA Profile(.mobileconfig) (default: GM only)"
+	echo "-c [mobileconfig]	get Firmware from OTA Profile(.mobileconfig) (default: GM only)"
 	echo "-i			run interface mode"
 	echo "-s			search only"
 	echo "-u			only show update URL on summary"
