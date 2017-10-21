@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareU
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=42
+TOOL_VERSION=43
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -55,6 +55,11 @@ function showHelpMessage(){
 }
 
 function setOption(){
+	if [[ "$1" == "--verbose" || "$2" == "--verbose" || "$3" == "--verbose" || "$4" == "--verbose" || "$5" == "--verbose" || "$6" == "--verbose" || "$7" == "--verbose" || "$8" == "--verbose" || "$9" == "--verbose" ]]; then
+		VERBOSE=YES
+	else
+		VERBOSE=NO
+	fi
 	if [[ "$1" == -n ]]; then
 		MODEL="$2"
 	fi
@@ -200,11 +205,6 @@ function setOption(){
 	fi
 	if [[ -z "$OTA_PROFILE" ]]; then
 		OTA_PROFILE=GM
-	fi
-	if [[ "$1" == "--verbose" || "$2" == "--verbose" || "$3" == "--verbose" || "$4" == "--verbose" || "$5" == "--verbose" || "$6" == "--verbose" || "$7" == "--verbose" || "$8" == "--verbose" || "$9" == "--verbose" ]]; then
-		VERBOSE=YES
-	else
-		VERBOSE=NO
 	fi
 	if [[ "$1" == "-s" || "$2" == "-s" || "$3" == "-s" || "$4" == "-s" || "$5" == "-s" || "$6" == "-s" || "$7" == "-s" || "$8" == "-s" || "$9" == "-s" ]]; then
 		SEARCH_ONLY=YES
@@ -568,6 +568,9 @@ function parseMobileConfig(){
 			PASS_ONCE_0=YES
 		fi
 	done
+	if [[ "$VERBOSE" == YES ]]; then
+		echo "CUSTOM_OTA=$CUSTOM_OTA"
+	fi
 }
 
 function parseAsset(){
@@ -731,6 +734,9 @@ function showSummary(){
 			echo "Update type: Short"
 		else
 			echo "Update type: Full"
+		fi
+		if [[ "$OTA_PROFILE" == CUSTOM ]]; then
+			echo "Update Asset: $CUSTOM_OTA"
 		fi
 		echo "Update URL: $DOWNLOAD_URL"
 		if [[ ! "$SEARCH_ONLY" == YES ]]; then
