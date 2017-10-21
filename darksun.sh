@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareU
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
 http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=41
+TOOL_VERSION=42
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -44,6 +44,7 @@ function showHelpMessage(){
 	echo "-e [prerequisite]	get Short update file (default: Full)"
 	echo "-d			get Developer Beta Firmware (default: GM only)"
 	echo "-p			get Public Beta Firmware (default: GM only)"
+	echo "-c			get Firmware from OTA Profile(.mobileconfig) (default: GM only)"
 	echo "-i			run interface mode"
 	echo "-s			search only"
 	echo "-u			only show update URL on summary"
@@ -151,6 +152,52 @@ function setOption(){
 	if [[ "$1" == "-p" || "$2" == "-p" || "$3" == "-p" || "$4" == "-p" || "$5" == "-p" || "$6" == "-p" || "$7" == "-p" || "$8" == "-p" || "$9" == "-p" ]]; then
 		OTA_PROFILE=PUBLIC
 	fi
+	if [[ "$1" == -c ]]; then
+		PATH_MOBILECONFIG="$2"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$2" == -c ]]; then
+		PATH_MOBILECONFIG="$3"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$3" == -c ]]; then
+		PATH_MOBILECONFIG="$4"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$4" == -c ]]; then
+		PATH_MOBILECONFIG="$5"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$5" == -c ]]; then
+		PATH_MOBILECONFIG="$6"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$6" == -c ]]; then
+		PATH_MOBILECONFIG="$7"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$7" == -c ]]; then
+		PATH_MOBILECONFIG="$8"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$8" == -c ]]; then
+		PATH_MOBILECONFIG="$9"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$OTA_PROFILE" == CUSTOM ]]; then
+		if [[ -z "$PATH_MOBILECONFIG" ]]; then
+			showHelpMessage
+		fi
+		if [[ ! -f "$PATH_MOBILECONFIG" ]]; then
+			echo "$PATH_MOBILECONFIG: No such file."
+			quitTool 1
+		fi
+		parseMobileConfig
+		if [[ -z "$CUSTOM_OTA" ]]; then
+			echo "ERROR: Invalid mobileconfig."
+			quitTool 1
+		fi
+	fi
 	if [[ -z "$OTA_PROFILE" ]]; then
 		OTA_PROFILE=GM
 	fi
@@ -180,7 +227,7 @@ function setOption(){
 		DO_NOT_CLEAN_TEMP_DIR=NO
 	fi
 	if [[ "$INTERFACE_MODE" == YES ]]; then
-		TITLE_NUM=0
+		TITLE_NUM=1
 	fi
 	if [[ ! "$INTERFACE_MODE" == YES ]]; then
 		if [[ -z "$MODEL" || -z "$VERSION" ]]; then
@@ -202,7 +249,7 @@ function setOption(){
 }
 
 function setProjectPath(){
-	COUNT=0
+	COUNT=1
 	while(true); do
 		if [[ -d "/tmp/darksun/$COUNT" ]]; then
 			COUNT=$((COUNT+1))
@@ -244,6 +291,8 @@ function showInterface(){
 		fi
 		if [[ -z "$OTA_PROFILE" ]]; then
 			echo "(4) profile: (undefined)"
+		elif [[ "$OTA_PROFILE" == CUSTOM ]]; then
+			echo "(4) profile: CUSTOM ($CUSTOM_OTA)"
 		else
 			echo "(4) profile: $OTA_PROFILE"
 		fi
@@ -286,9 +335,10 @@ function showInterface(){
 				showLines "-"
 				echo "(1) GM"
 				echo "(2) DEVELOPER"
-				echo "(3) PUBLIC"
+				echo "(3) CUSTOM"
+				echo "(4) PUBLIC"
 				showLines "-"
-				echo "Available commands: 1~3, break, exit"
+				echo "Available commands: 1~4, break, exit"
 				showLines "*"
 				read -p "- " ANSWER
 
@@ -301,6 +351,21 @@ function showInterface(){
 					backTitleBar
 					break
 				elif [[ "$ANSWER" == 3 ]]; then
+					read -p "PATH_MOBILECONFIG=" PATH_MOBILECONFIG
+					if [[ -z "$PATH_MOBILECONFIG" || ! -f "$PATH_MOBILECONFIG" ]]; then
+						OTA_PROFILE=GM
+					else
+						OTA_PROFILE=CUSTOM
+						parseMobileConfig
+						if [[ -z "$CUSTOM_OTA" ]]; then
+							echo "ERROR: Invalid mobileconfig."
+							OTA_PROFILE=GM
+							showPA2C
+						fi
+					fi
+					backTitleBar
+					break
+				elif [[ "$ANSWER" == 4 ]]; then
 					OTA_PROFILE=PUBLIC
 					backTitleBar
 					break
@@ -355,8 +420,10 @@ function showInterface(){
 				echo "(3) verbose: $VERBOSE"
 				echo "(4) no ssl: $NO_SSL"
 				echo "(5) do not clean: $DO_NOT_CLEAN_TEMP_DIR"
+				echo "(6) addTitleBar"
+				echo "(7) backTitleBar"
 				showLines "-"
-				echo "Available commands: 1~5, break, exit"
+				echo "Available commands: 1~7, break, exit"
 				showLines "*"
 
 				read -p "- " ANSWER
@@ -390,6 +457,11 @@ function showInterface(){
 					else
 						DO_NOT_CLEAN_TEMP_DIR=YES
 					fi
+				elif [[ "$ANSWER" == 6 ]]; then
+					read -p "addTitleBar:" ANSWER
+					addTitleBar "$ANSWER"
+				elif [[ "$ANSWER" == 7 ]]; then
+					backTitleBar
 				elif [[ "$ANSWER" == break ]]; then
 					backTitleBar
 					break
@@ -435,6 +507,8 @@ function searchDownloadURL(){
 		URL="$DB_OTA"
 	elif [[ "$OTA_PROFILE" == PUBLIC ]]; then
 		URL="$PB_OTA"
+	elif [[ "$OTA_PROFILE" == CUSTOM ]]; then
+		URL="$CUSTOM_OTA"
 	elif [[ "$OTA_PROFILE" == GM ]]; then
 		URL="$GM_OTA"
 	fi
@@ -477,6 +551,23 @@ function searchDownloadURL(){
 		#echo "$COUNT" "$PASS_ONCE_0" "$PASS_ONCE_1" "$PASS_ONCE_2" "$PASS_ONCE_3" "$PASS_ONCE_4" "$PASS_ONCE_5" "$PASS_ONCE_6" "$PASS_ONCE_7" "$PASS_ONCE_8" "$PASS_ONCE_9" "$BUILD_NAME_VALUE" "$BUILD_NUMBER_VALUE"
 		quitTool 1
 	fi
+}
+
+function parseMobileConfig(){
+	CUSTOM_OTA=
+	PASS_ONCE_0=NO
+	for VALUE in $(strings $PATH_MOBILECONFIG); do
+		if [[ "$VERBOSE" == YES ]]; then
+			echo "$VALUE"
+		fi
+		if [[ "$PASS_ONCE_0" == YES ]]; then
+			CUSTOM_OTA="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+			break
+		fi
+		if [[ "$VALUE" == "<key>MobileAssetServerURL-com.apple.MobileAsset.SoftwareUpdate</key>" ]]; then
+			PASS_ONCE_0=YES
+		fi
+	done
 }
 
 function parseAsset(){
@@ -794,13 +885,14 @@ function showPA2C(){
 function showTitleBar(){
 	if [[ -f "$PROJECT_DIR/TitleBar/$TITLE_NUM" ]]; then
 		cat "$PROJECT_DIR/TitleBar/$TITLE_NUM"
+	else
+		echo "Title"
 	fi
 }
 
 function addTitleBar(){
 	if [[ ! -z "$1" ]]; then
 		if [[ -z "$(ls "$PROJECT_DIR/TitleBar")" ]]; then
-			TITLE_NUM=$((${TITLE_NUM}+1))
 			echo "$1" >> "$PROJECT_DIR/TitleBar/${TITLE_NUM}"
 		else
 			echo "$(showTitleBar) > ${1}" >> "$PROJECT_DIR/TitleBar/$((${TITLE_NUM}+1))"
