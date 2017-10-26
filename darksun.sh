@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
 http://mesu.apple.com/assets/tvOS11PublicSeed"
-TOOL_VERSION=46
+TOOL_VERSION=47
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -890,7 +890,9 @@ function showSummary(){
 			echo "Update Asset: $CUSTOM_OTA"
 		fi
 		echo "Update URL: $DOWNLOAD_FIRMWARE_URL"
-		echo "Documentation URL: $DOWNLOAD_DOCUMENTATION_URL"
+		if [[ ! -z "$DOWNLOAD_DOCUMENTATION_URL" ]]; then
+			echo "Documentation URL: $DOWNLOAD_DOCUMENTATION_URL"
+		fi
 		if [[ ! "$SEARCH_ONLY" == YES ]]; then
 			echo "Output: $OUTPUT_DIRECTORY"
 		fi
