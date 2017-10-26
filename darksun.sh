@@ -12,28 +12,28 @@
 # - iOS 8 Public Beta Seed (But now GM)
 # - watchOS 3 Developer Beta Seed (But now GM)
 # - tvOS 10 Developer Beta Seed (But now GM)
-GM_OTA="https://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/watch/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tv/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/audio/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/iOSPublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/seed-R40.Subdivide/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/seed-R40.2112/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/watchOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tvOSDeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+GM_OTA="https://mesu.apple.com/assets
+https://mesu.apple.com/assets/watch
+http://mesu.apple.com/assets/tv
+http://mesu.apple.com/assets/audio
+https://mesu.apple.com/assets/iOSPublicSeed
+https://mesu.apple.com/assets/seed-R40.Subdivide
+https://mesu.apple.com/assets/seed-R40.2112
+https://mesu.apple.com/assets/watchOSDeveloperSeed
+http://mesu.apple.com/assets/tvOSDeveloperSeed"
 # DB_OTA
 # - iOS 11 Developer Beta Seed
 # - watchOS 4 Developer Beta Seed
 # - tvOS 11 Developer Beta Seed
-DB_OTA="https://mesu.apple.com/assets/iOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-https://mesu.apple.com/assets/watchOS4DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tvOS11DeveloperSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+DB_OTA="https://mesu.apple.com/assets/iOS11DeveloperSeed
+https://mesu.apple.com/assets/watchOS4DeveloperSeed
+http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 # PB_OTA
 # - iOS 11 Public Beta Seed
 # - tvOS 11 Public Beta Seed
-PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml
-http://mesu.apple.com/assets/tvOS11PublicSeed/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-TOOL_VERSION=44
+PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
+http://mesu.apple.com/assets/tvOS11PublicSeed"
+TOOL_VERSION=45
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -518,17 +518,17 @@ function searchDownloadURL(){
 		fi
 		if [[ "$NO_SSL" == YES ]]; then
 			if [[ "$VERBOSE" == YES ]]; then
-				echo "Downloading $OTA_URL"
-				curl -k -o "$PROJECT_DIR/catalog.xml" "$OTA_URL"
+				echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+				curl -k -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 			else
-				curl -k -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL"
+				curl -k -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 			fi
 		else
 			if [[ "$VERBOSE" == YES ]]; then
-				echo "Downloading $OTA_URL"
-				curl -o "$PROJECT_DIR/catalog.xml" "$OTA_URL"
+				echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+				curl -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 			else
-				curl -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL"
+				curl -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 			fi
 		fi
 		if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
@@ -536,13 +536,13 @@ function searchDownloadURL(){
 			quitTool 1
 		fi
 		parseAsset
-		if [[ ! -z "$DOWNLOAD_URL" ]]; then
+		if [[ ! -z "$DOWNLOAD_FIRMWARE_URL" ]]; then
 			BUILD_NUMBER="$(echo "$BUILD_NUMBER_VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 			BUILD_NAME="$(echo "$BUILD_NAME_VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 			break
 		fi
 	done
-	if [[ -z "$DOWNLOAD_URL" ]]; then
+	if [[ -z "$DOWNLOAD_FIRMWARE_URL" ]]; then
 		if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
 			echo "$MODEL-$VERSION (pre: $PREREQUISITE_BUILD) not found."
 		else
@@ -550,10 +550,38 @@ function searchDownloadURL(){
 		fi
 		#echo "$COUNT" "$PASS_ONCE_0" "$PASS_ONCE_1" "$PASS_ONCE_2" "$PASS_ONCE_3" "$PASS_ONCE_4" "$PASS_ONCE_5" "$PASS_ONCE_6" "$PASS_ONCE_7" "$PASS_ONCE_8" "$PASS_ONCE_9" "$BUILD_NAME_VALUE" "$BUILD_NUMBER_VALUE"
 		quitTool 1
+	else
+		for OTA_URL in $URL; do
+			if [[ -f "$PROJECT_DIR/documentation.xml" ]]; then
+				rm "$PROJECT_DIR/documentation.xml"
+			fi
+			if [[ "$NO_SSL" == YES ]]; then
+				if [[ "$VERBOSE" == YES ]]; then
+					echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					curl -k -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+				else
+					curl -k -s -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+				fi
+			else
+				if [[ "$VERBOSE" == YES ]]; then
+					echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					curl -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+				else
+					curl -s -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+				fi
+			fi
+			if [[ -f "$PROJECT_DIR/documentation.xml" ]]; then
+				parseDocumentation
+				if [[ ! -z "$DOWNLOAD_DOCUMENTATION_URL" ]]; then
+					break
+				fi
+			fi
+		done
 	fi
 }
 
 function parseMobileConfig(){
+	VALUE=
 	CUSTOM_OTA=
 	PASS_ONCE_0=NO
 	for VALUE in $(strings $PATH_MOBILECONFIG); do
@@ -561,7 +589,8 @@ function parseMobileConfig(){
 			echo "$VALUE"
 		fi
 		if [[ "$PASS_ONCE_0" == YES ]]; then
-			CUSTOM_OTA="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+			CUSTOM_OTA="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+			PASS_ONCE_0=NO
 			break
 		fi
 		if [[ "$VALUE" == "<key>MobileAssetServerURL-com.apple.MobileAsset.SoftwareUpdate</key>" ]]; then
@@ -581,6 +610,7 @@ function parseAsset(){
 	BUILD_NUMBER_VALUE=
 	COUNT=0
 	FOUND_PREREQUISITE_CORRECTLY=NO
+	FOUND_MODEL_CORRECTLY_AS_MODEL=NO
 	PASS_ONCE_0=NO
 	PASS_ONCE_1=NO
 	PASS_ONCE_2=NO
@@ -594,33 +624,31 @@ function parseAsset(){
 	PASS_ONCE_10=NO
 	FIRST_URL=
 	SECOND_URL=
-	DOWNLOAD_URL=
+	DOWNLOAD_FIRMWARE_URL=
 	for VALUE in $(cat "$PROJECT_DIR/catalog.xml"); do
 		if [[ "$VERBOSE" == YES ]]; then
 			echo "$VALUE"
 		fi
-		if [[ "$COUNT" == 3 ]]; then
+		if [[ "$COUNT" == 2 ]]; then
 			if [[ "$PASS_ONCE_10" == YES ]]; then
 				SECOND_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 				PASS_ONCE_10=NO
-				DOWNLOAD_URL="$FIRST_URL$SECOND_URL"
+				DOWNLOAD_FIRMWARE_URL="$FIRST_URL$SECOND_URL"
 				break
 			fi
 			if [[ "$VALUE" == "<key>__RelativePath</key>" ]]; then
 				PASS_ONCE_10=YES
 			fi
-		elif [[ "$COUNT" == 2 ]]; then
 			if [[ "$PASS_ONCE_9" == YES ]]; then
 				FIRST_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 				PASS_ONCE_9=NO
-				COUNT=3
 			fi
 			if [[ "$VALUE" == "<key>__BaseURL</key>" ]]; then
 				PASS_ONCE_9=YES
 			fi
 			if [[ "$PASS_ONCE_8" == YES ]]; then
 				PASS_ONCE_8=NO
-				DOWNLOAD_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+				DOWNLOAD_FIRMWARE_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 				break
 			fi
 			if [[ "$VALUE" == "<key>RealUpdateURL</key>" ]]; then # for iOS 7.1.2 (pre: 7.1.1_11D201)
@@ -631,10 +659,15 @@ function parseAsset(){
 				if [[ "$VALUE" == "<string>$MODEL</string>" ]]; then
 					COUNT=2
 				else
-					COUNT=0
-					BUILD_NUMBER_VALUE=
-					FOUND_PREREQUISITE_CORRECTLY=NO
-					BUILD_NAME=
+					if [[ "$FOUND_MODEL_CORRECTLY_AS_MODEL" == YES ]]; then
+						MODEL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+						COUNT=2
+					else
+						COUNT=0
+						BUILD_NUMBER_VALUE=
+						FOUND_PREREQUISITE_CORRECTLY=NO
+						BUILD_NAME=
+					fi
 				fi
 				PASS_ONCE_7=NO
 			fi
@@ -647,7 +680,7 @@ function parseAsset(){
 			fi
 			if [[ "$PASS_ONCE_5" == YES ]]; then
 				if [[ "$VALUE" == "<string>$MODEL</string>" ]]; then
-					COUNT=2
+					FOUND_MODEL_CORRECTLY_AS_MODEL=YES
 				fi
 				PASS_ONCE_5=NO
 			fi
@@ -719,16 +752,134 @@ function parseAsset(){
 	done
 }
 
+function parseDocumentation(){
+	VALUE=
+	COUNT=0
+	DOCUMENTATION_NAME=
+	DOCUMENTATION_DESCRIPTION=
+	PASS_ONCE_0=NO
+	PASS_ONCE_1=NO
+	PASS_ONCE_2=NO
+	PASS_ONCE_3=NO
+	PASS_ONCE_4=NO
+	PASS_ONCE_5=NO
+	MODEL_TYPE=
+	FIRST_URL=
+	SECOND_URL=
+	DOWNLOAD_DOCUMENTATION_URL=
+	if [[ ! -z "$(echo $MODEL | grep iPad)" ]]; then
+		MODEL_TYPE=iPad
+	elif [[ ! -z "$(echo $MODEL | grep iPhone)" ]]; then
+		MODEL_TYPE=iPhone
+	elif [[ ! -z "$(echo $MODEL | grep iPod)" ]]; then
+		MODEL_TYPE=iPod
+	elif [[ ! -z "$(echo $MODEL | grep AudioAccessory)" ]]; then #HomePod
+		MODEL_TYPE=AudioAccessory
+	fi
+	if [[ "$VERBOSE" == YES ]]; then
+		echo "MODEL_TYPE=$MODEL_TYPE"
+	fi
+	if [[ ! -z "$MODEL_TYPE" ]]; then
+		for VALUE in $(cat "$PROJECT_DIR/documentation.xml"); do
+			if [[ "$VERBOSE" == YES ]]; then
+				echo "$VALUE"
+			fi
+			if [[ "$COUNT" == 3 ]]; then
+				if [[ "$PASS_ONCE_4" == YES ]]; then
+					SECOND_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+					PASS_ONCE_4=NO
+					DOWNLOAD_DOCUMENTATION_URL="$FIRST_URL$SECOND_URL"
+					break
+				fi
+				if [[ "$VALUE" == "<key>__RelativePath</key>" ]]; then
+					PASS_ONCE_4=YES
+				fi
+				if [[ "$PASS_ONCE_3" == YES ]]; then
+					FIRST_URL="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+					PASS_ONCE_3=NO
+				fi
+				if [[ "$VALUE" == "<key>__BaseURL</key>" ]]; then
+					PASS_ONCE_3=YES
+				fi
+			elif [[ "$COUNT" == 2 ]]; then
+				if [[ "$PASS_ONCE_2" == YES ]]; then
+					if [[ "$VALUE" == "<string>$BUILD_NAME</string>" ]]; then
+						COUNT=3
+					else
+						COUNT=0
+					fi
+					PASS_ONCE_2=NO
+				fi
+				if [[ "$VALUE" == "<key>SUDocumentationID</key>" ]]; then
+					PASS_ONCE_2=YES
+				fi
+			elif [[ "$COUNT" == 1 ]]; then
+				if [[ "$PASS_ONCE_1" == YES ]]; then
+					if [[ "$VALUE" == "<string>$VERSION</string>" ]]; then
+						COUNT=2
+					else	
+						COUNT=0
+					fi
+					PASS_ONCE_1=NO
+				fi
+				if [[ "$VALUE" == "<key>OSVersion</key>" ]]; then
+					PASS_ONCE_1=YES
+				fi
+			elif [[ "$COUNT" == 0 ]]; then
+				if [[ "$PASS_ONCE_0" == YES ]]; then
+					if [[ "$VALUE" == "<string>$MODEL_TYPE</string>" ]]; then
+						COUNT=1
+					fi
+					PASS_ONCE_0=NO
+				fi
+				if [[ "$VALUE" == "<key>Device</key>" ]]; then
+					PASS_ONCE_0=YES
+				fi
+			fi
+		done
+	fi
+	if [[ ! -z "$DOWNLOAD_DOCUMENTATION_URL" ]]; then
+		if [[ -f "$PROJECT_DIR/documentation.zip" ]]; then
+			rm "$PROJECT_DIR/documentation.zip"
+		fi
+		if [[ "$NO_SSL" == YES ]]; then
+			if [[ "$VERBOSE" == YES ]]; then
+				curl -k -o "$PROJECT_DIR/documentation.zip" "$DOWNLOAD_DOCUMENTATION_URL"
+			else
+				curl -k -s -o "$PROJECT_DIR/documentation.zip" "$DOWNLOAD_DOCUMENTATION_URL"
+			fi
+		else
+			if [[ "$VERBOSE" == YES ]]; then
+				curl -o "$PROJECT_DIR/documentation.zip" "$DOWNLOAD_DOCUMENTATION_URL"
+			else
+				curl -s -o "$PROJECT_DIR/documentation.zip" "$DOWNLOAD_DOCUMENTATION_URL"
+			fi
+		fi
+		if [[ "$VERBOSE" == YES ]]; then
+			unzip -o -d "$PROJECT_DIR/documentation" "$PROJECT_DIR/documentation.zip"
+		else
+			unzip -qq -o -d "$PROJECT_DIR/documentation" "$PROJECT_DIR/documentation.zip"
+		fi
+		if [[ -f "$PROJECT_DIR/documentation/AssetData/en.lproj/documentation.strings" ]]; then
+			DOCUMENTATION_NAME="$(strings "$PROJECT_DIR/documentation/AssetData/en.lproj/documentation.strings" | grep "$VERSION" | cut -d"Z" -f2)"
+		fi
+	fi
+}
+
 function showSummary(){
 	if [[ "$SHOW_URL_ONLY" == YES ]]; then
-		echo "$DOWNLOAD_URL"
+		echo "$DOWNLOAD_FIRMWARE_URL"
 	else
 		showLines "*"
 		echo "SUMMARY (darksun-$TOOL_VERSION)"
 		showLines "-"
 		echo "Device name: $MODEL"
-		echo "Version: $VERSION ($BUILD_NAME)"
+		echo "Version: $VERSION"
 		echo "Build: $BUILD_NUMBER"
+		echo "Internal build name: $BUILD_NAME"
+		if [[ ! -z "$DOCUMENTATION_NAME" ]]; then
+			echo "Public build name: $DOCUMENTATION_NAME"
+		fi
 		if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
 			echo "Prerequisite: $PREREQUISITE_BUILD"
 			echo "Update type: Short"
@@ -738,7 +889,8 @@ function showSummary(){
 		if [[ "$OTA_PROFILE" == CUSTOM ]]; then
 			echo "Update Asset: $CUSTOM_OTA"
 		fi
-		echo "Update URL: $DOWNLOAD_URL"
+		echo "Update URL: $DOWNLOAD_FIRMWARE_URL"
+		echo "Documentation URL: $DOWNLOAD_DOCUMENTATION_URL"
 		if [[ ! "$SEARCH_ONLY" == YES ]]; then
 			echo "Output: $OUTPUT_DIRECTORY"
 		fi
@@ -794,15 +946,15 @@ function downloadUpdate(){
 	echo "Downloading update file..."
 	if [[ "$NO_SSL" == YES ]]; then
 		if [[ "$VERBOSE" == YES ]]; then
-			curl -k -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+			curl -k -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_FIRMWARE_URL"
 		else
-			curl -k -# -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+			curl -k -# -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_FIRMWARE_URL"
 		fi
 	else
 		if [[ "$VERBOSE" == YES ]]; then
-			curl -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+			curl -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_FIRMWARE_URL"
 		else
-			curl -# -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_URL"
+			curl -# -o "$PROJECT_DIR/update.zip" "$DOWNLOAD_FIRMWARE_URL"
 		fi
 	fi
 	if [[ ! -f "$PROJECT_DIR/update.zip" ]]; then
@@ -866,6 +1018,9 @@ function extractUpdate(){
 		fi
 		rm "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-payload"
 		rm "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-pb"
+	fi
+	if [[ -d "$PROJECT_DIR/documentation" ]]; then
+		mv "$PROJECT_DIR/documentation" "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-documentation"
 	fi
 	echo "Script was done."
 	quitTool 0

@@ -63,15 +63,18 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 	
 	$ ./darksun.sh -n iPod7,1 -v 10.3.3 -s
 	Searching... (will take a long time)
-	*************************************************
+	***********************************************
 	SUMMARY (darksun-XX)
-	-------------------------------------------------
+	-----------------------------------------------
 	Device name: iPod7,1
 	Version: 10.3.3 (iOS1033GM)
 	Build: 14G60
+	Internal build name: iOS1033GM
+	Public build name: iOS 10.3.3
 	Update type: Full
 	Update URL: http://appldnld.apple.com/ios10.3.3/091-23228-20170719-B311CB1A-697B-11E7-9148-5E9500BA0AE3/com_apple_MobileAsset_SoftwareUpdate/b9fa0dc04dcefea4845c9ceeb2e7e80efc9e9ee6.zip
-	*************************************************
+	Documentation URL: http://appldnld.apple.com/ios10.3.3/091-19447-20170717-3D5EFFA4-5D15-11E7-9164-A3FB7F942F55/com_apple_MobileAsset_SoftwareUpdateDocumentation/be4682f7d73df18e439955e0f128a3b5b81dbe14.zip
+	***********************************************
 
 ▼ search only & get OTA URL only
 
