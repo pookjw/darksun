@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
 http://mesu.apple.com/assets/tvOS11PublicSeed"
-TOOL_VERSION=48
+TOOL_VERSION=49
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -983,7 +983,7 @@ function extractUpdate(){
 			mv "$PROJECT_DIR/update/AssetData/payload/$FILE" "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-$FILE"
 		fi
 	done
-	for FILE in app_patches links.txt patches payload removed.txt documentation; do
+	for FILE in app_patches links.txt patches payload removed.txt; do
 		if [[ -d "$PROJECT_DIR/update/AssetData/payloadv2/$FILE" || -f "$PROJECT_DIR/update/AssetData/payloadv2/$FILE" ]]; then
 			if [[ -d "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-$FILE" || -f "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-$FILE" ]]; then
 				rm -rf "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-$FILE"
@@ -1022,6 +1022,10 @@ function extractUpdate(){
 		rm "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-pb"
 	fi
 	if [[ -d "$PROJECT_DIR/documentation" ]]; then
+		if [[ -d "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-documentation" || -f "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-documentation" ]]; then
+			rm -rf "$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-documentation"
+			echo "*** CAUTION: Removed $OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-v2-documentation"
+		fi
 		mv "$PROJECT_DIR/documentation" "$OUTPUT_DIRECTORY/$MODEL-$VERSION-$BUILD_NUMBER-$BUILD_NAME-documentation"
 	fi
 	echo "Script was done."
