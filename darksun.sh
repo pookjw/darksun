@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
 http://mesu.apple.com/assets/tvOS11PublicSeed"
-TOOL_VERSION=51
+TOOL_VERSION=52
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -49,7 +49,7 @@ function showHelpMessage(){
 	echo "-i			run interface mode"
 	echo "-s			search only"
 	echo "-u			only show update URL on summary"
-	echo "--loop			search ota infinitely until update was found"
+	echo "--loop			search ota infinitely until update found"
 	echo "--verbose		run verbose mode"
 	echo "--no-ssl		no SSL mode"
 	echo "--do-not-clean		do not clean temp dir on quit"

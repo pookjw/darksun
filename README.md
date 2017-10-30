@@ -34,7 +34,7 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 	-i			run interface mode
 	-s			search only
 	-u			only show update URL on summary
-	--loop			search ota infinitely until update was found
+	--loop			search ota infinitely until update found
 	--verbose		run verbose mode
 	--no-ssl		no SSL mode
 	--do-not-clean		do not clean temp dir on quit
