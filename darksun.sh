@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
 http://mesu.apple.com/assets/tvOS11PublicSeed"
-TOOL_VERSION=50
+TOOL_VERSION=51
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -44,10 +44,12 @@ function showHelpMessage(){
 	echo "-e [prerequisite]	get Short update file (default: Full)"
 	echo "-d			get Developer Beta Firmware (default: GM only)"
 	echo "-p			get Public Beta Firmware (default: GM only)"
-	echo "-c [mobileconfig]	get Firmware from OTA Profile(.mobileconfig) (default: GM only)"
+	echo "-m [mobileconfig]	get Firmware from OTA Profile(.mobileconfig) (default: GM only)"
+	echo "-c [url]		get Firmware from custom catalog URL"
 	echo "-i			run interface mode"
 	echo "-s			search only"
 	echo "-u			only show update URL on summary"
+	echo "--loop			search ota infinitely until update was found"
 	echo "--verbose		run verbose mode"
 	echo "--no-ssl		no SSL mode"
 	echo "--do-not-clean		do not clean temp dir on quit"
@@ -157,39 +159,39 @@ function setOption(){
 	if [[ "$1" == "-p" || "$2" == "-p" || "$3" == "-p" || "$4" == "-p" || "$5" == "-p" || "$6" == "-p" || "$7" == "-p" || "$8" == "-p" || "$9" == "-p" ]]; then
 		OTA_PROFILE=PUBLIC
 	fi
-	if [[ "$1" == -c ]]; then
+	if [[ "$1" == -m ]]; then
 		PATH_MOBILECONFIG="$2"
-		OTA_PROFILE=CUSTOM
+		OTA_PROFILE=MOBILE_CONFIG
 	fi
-	if [[ "$2" == -c ]]; then
+	if [[ "$2" == -m ]]; then
 		PATH_MOBILECONFIG="$3"
-		OTA_PROFILE=CUSTOM
+		OTA_PROFILE=MOBILE_CONFIG
 	fi
-	if [[ "$3" == -c ]]; then
+	if [[ "$3" == -m ]]; then
 		PATH_MOBILECONFIG="$4"
-		OTA_PROFILE=CUSTOM
+		OTA_PROFILE=MOBILE_CONFIG
 	fi
-	if [[ "$4" == -c ]]; then
+	if [[ "$4" == -m ]]; then
 		PATH_MOBILECONFIG="$5"
-		OTA_PROFILE=CUSTOM
+		OTA_PROFILE=MOBILE_CONFIG
 	fi
-	if [[ "$5" == -c ]]; then
+	if [[ "$5" == -m ]]; then
 		PATH_MOBILECONFIG="$6"
-		OTA_PROFILE=CUSTOM
+		OTA_PROFILE=MOBILE_CONFIG
 	fi
-	if [[ "$6" == -c ]]; then
+	if [[ "$6" == -m ]]; then
 		PATH_MOBILECONFIG="$7"
-		OTA_PROFILE=CUSTOM
+		OTA_PROFILE=MOBILE_CONFIG
 	fi
-	if [[ "$7" == -c ]]; then
+	if [[ "$7" == -m ]]; then
 		PATH_MOBILECONFIG="$8"
-		OTA_PROFILE=CUSTOM
+		OTA_PROFILE=MOBILE_CONFIG
 	fi
-	if [[ "$8" == -c ]]; then
+	if [[ "$8" == -m ]]; then
 		PATH_MOBILECONFIG="$9"
-		OTA_PROFILE=CUSTOM
+		OTA_PROFILE=MOBILE_CONFIG
 	fi
-	if [[ "$OTA_PROFILE" == CUSTOM ]]; then
+	if [[ "$OTA_PROFILE" == MOBILE_CONFIG ]]; then
 		if [[ -z "$PATH_MOBILECONFIG" ]]; then
 			showHelpMessage
 		fi
@@ -198,10 +200,42 @@ function setOption(){
 			quitTool 1
 		fi
 		parseMobileConfig
-		if [[ -z "$CUSTOM_OTA" ]]; then
+		if [[ -z "$MOBILE_CONFIG_OTA" ]]; then
 			echo "ERROR: Invalid mobileconfig."
 			quitTool 1
 		fi
+	fi
+	if [[ "$1" == -c ]]; then
+		CUSTOM_OTA="$2"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$2" == -c ]]; then
+		CUSTOM_OTA="$3"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$3" == -c ]]; then
+		CUSTOM_OTA="$4"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$4" == -c ]]; then
+		CUSTOM_OTA="$5"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$5" == -c ]]; then
+		CUSTOM_OTA="$6"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$6" == -c ]]; then
+		CUSTOM_OTA="$7"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$7" == -c ]]; then
+		CUSTOM_OTA="$8"
+		OTA_PROFILE=CUSTOM
+	fi
+	if [[ "$8" == -c ]]; then
+		CUSTOM_OTA="$9"
+		OTA_PROFILE=CUSTOM
 	fi
 	if [[ -z "$OTA_PROFILE" ]]; then
 		OTA_PROFILE=GM
@@ -215,6 +249,11 @@ function setOption(){
 		SHOW_URL_ONLY=YES
 	else
 		SHOW_URL_ONLY=NO
+	fi
+	if [[ "$1" == "--loop" || "$2" == "--loop" || "$3" == "--loop" || "$4" == "--loop" || "$5" == "--loop" || "$6" == "--loop" || "$7" == "--loop" || "$8" == "--loop" || "$9" == "--loop" ]]; then
+		SEARCH_LOOP=YES
+	else
+		SEARCH_LOOP=NO
 	fi
 	if [[ "$1" == "--no-ssl" || "$2" == "--no-ssl" || "$3" == "--no-ssl" || "$4" == "--no-ssl" || "$5" == "--no-ssl" || "$6" == "--no-ssl" || "$7" == "--no-ssl" || "$8" == "--no-ssl" || "$9" == "--no-ssl" ]]; then
 		NO_SSL=YES
@@ -295,6 +334,8 @@ function showInterface(){
 			echo "(4) profile: (undefined)"
 		elif [[ "$OTA_PROFILE" == CUSTOM ]]; then
 			echo "(4) profile: CUSTOM ($CUSTOM_OTA)"
+		elif [[ "$OTA_PROFILE" == MOBILE_CONFIG ]]; then
+			echo "(4) profile: MOBILE_CONFIG ($MOBILE_CONFIG_OTA)"
 		else
 			echo "(4) profile: $OTA_PROFILE"
 		fi
@@ -337,8 +378,9 @@ function showInterface(){
 				showLines "-"
 				echo "(1) GM"
 				echo "(2) DEVELOPER"
-				echo "(3) CUSTOM"
-				echo "(4) PUBLIC"
+				echo "(3) PUBLIC"
+				echo "(4) MOBILE_CONFIG"
+				echo "(5) CUSTOM"
 				showLines "-"
 				echo "Available commands: 1~4, break, exit"
 				showLines "*"
@@ -353,22 +395,38 @@ function showInterface(){
 					backTitleBar
 					break
 				elif [[ "$ANSWER" == 3 ]]; then
+					OTA_PROFILE=PUBLIC
+					backTitleBar
+					break
+				elif [[ "$ANSWER" == 4 ]]; then
 					read -p "PATH_MOBILECONFIG=" PATH_MOBILECONFIG
-					if [[ -z "$PATH_MOBILECONFIG" || ! -f "$PATH_MOBILECONFIG" ]]; then
-						OTA_PROFILE=GM
+					if [[ -z "$PATH_MOBILECONFIG" ]]; then
+						backTitleBar
+						break
 					else
-						OTA_PROFILE=CUSTOM
-						parseMobileConfig
-						if [[ -z "$CUSTOM_OTA" ]]; then
-							echo "ERROR: Invalid mobileconfig."
-							OTA_PROFILE=GM
+						if [[ -f "$PATH_MOBILECONFIG" ]]; then
+							parseMobileConfig
+							if [[ -z "$MOBILE_CONFIG_OTA" ]]; then
+								echo "ERROR: Invalid mobileconfig."
+								OTA_PROFILE=GM
+								showPA2C
+							else
+								OTA_PROFILE=MOBILE_CONFIG
+							fi
+						else
+							echo "$PATH_MOBILECONFIG: No such file."
 							showPA2C
 						fi
 					fi
 					backTitleBar
 					break
-				elif [[ "$ANSWER" == 4 ]]; then
-					OTA_PROFILE=PUBLIC
+				elif [[ "$ANSWER" == 5 ]]; then
+					read -p "CUSTOM_OTA=" CUSTOM_OTA
+					if [[ -z "$CUSTOM_OTA" ]]; then
+						OTA_PROFILE=GM
+					else
+						OTA_PROFILE=CUSTOM
+					fi
 					backTitleBar
 					break
 				elif [[ "$ANSWER" == break ]]; then
@@ -393,18 +451,20 @@ function showInterface(){
 		elif [[ "$ANSWER" == 6 && "$SEARCH_DELTA_UPDATE" == YES ]]; then
 			read -p "PREREQUISITE_BUILD=" PREREQUISITE_BUILD
 		elif [[ "$ANSWER" == start ]]; then
-			if [[ -z "$MODEL" || -z "$VERSION" || -z "$OUTPUT_DIRECTORY" ]]; then
+			if [[ -z "$MODEL" || -z "$VERSION" ]]; then
 				echo "Please define all values."
 				showPA2C
 			else
-				if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
-					if [[ -z "$PREREQUISITE_BUILD" ]]; then
-						echo "Please define all values."
-						showPA2C
-					else
-						backTitleBar
-						break
-					fi
+				INTERFACE_VALUE_ERROR=NO
+				if [[ "$SEARCH_DELTA_UPDATE" == YES  && -z "$PREREQUISITE_BUILD" ]]; then
+					INTERFACE_VALUE_ERROR=YES
+				fi
+				if [[ ! "$SEARCH_ONLY" == YES && -z "$OUTPUT_DIRECTORY" ]]; then
+					INTERFACE_VALUE_ERROR=YES
+				fi
+				if [[ "$INTERFACE_VALUE_ERROR" == YES ]]; then
+					echo "Please define all values."
+					showPA2C 
 				else
 					backTitleBar
 					break
@@ -420,12 +480,13 @@ function showInterface(){
 				echo "(1) search only: $SEARCH_ONLY"
 				echo "(2) url only on summary: $SHOW_URL_ONLY"
 				echo "(3) verbose: $VERBOSE"
-				echo "(4) no ssl: $NO_SSL"
-				echo "(5) do not clean: $DO_NOT_CLEAN_TEMP_DIR"
-				echo "(6) addTitleBar"
-				echo "(7) backTitleBar"
+				echo "(4) search ota infinitely: $SEARCH_LOOP"
+				echo "(5) no ssl: $NO_SSL"
+				echo "(6) do not clean: $DO_NOT_CLEAN_TEMP_DIR"
+				echo "(7) addTitleBar"
+				echo "(8) backTitleBar"
 				showLines "-"
-				echo "Available commands: 1~7, break, exit"
+				echo "Available commands: 1~8, break, exit"
 				showLines "*"
 
 				read -p "- " ANSWER
@@ -448,21 +509,27 @@ function showInterface(){
 						VERBOSE=YES
 					fi
 				elif [[ "$ANSWER" == 4 ]]; then
+					if [[ "$SEARCH_LOOP" == YES ]]; then
+						SEARCH_LOOP=NO
+					else
+						SEARCH_LOOP=YES
+					fi
+				elif [[ "$ANSWER" == 5 ]]; then
 					if [[ "$NO_SSL" == YES ]]; then
 						NO_SSL=NO
 					else
 						NO_SSL=YES
 					fi
-				elif [[ "$ANSWER" == 5 ]]; then
+				elif [[ "$ANSWER" == 6 ]]; then
 					if [[ "$DO_NOT_CLEAN_TEMP_DIR" == YES ]]; then
 						DO_NOT_CLEAN_TEMP_DIR=NO
 					else
 						DO_NOT_CLEAN_TEMP_DIR=YES
 					fi
-				elif [[ "$ANSWER" == 6 ]]; then
+				elif [[ "$ANSWER" == 7 ]]; then
 					read -p "addTitleBar:" ANSWER
 					addTitleBar "$ANSWER"
-				elif [[ "$ANSWER" == 7 ]]; then
+				elif [[ "$ANSWER" == 8 ]]; then
 					backTitleBar
 				elif [[ "$ANSWER" == break ]]; then
 					backTitleBar
@@ -502,96 +569,107 @@ function showInterface(){
 }
 
 function searchDownloadURL(){
-	if [[ ! "$SHOW_URL_ONLY" == YES ]]; then
-		echo "Searching... (will take a long time)"
-	fi
-	if [[ "$OTA_PROFILE" == DEVELOPER ]]; then
-		URL="$DB_OTA"
-	elif [[ "$OTA_PROFILE" == PUBLIC ]]; then
-		URL="$PB_OTA"
-	elif [[ "$OTA_PROFILE" == CUSTOM ]]; then
-		URL="$CUSTOM_OTA"
-	elif [[ "$OTA_PROFILE" == GM ]]; then
-		URL="$GM_OTA"
-	fi
-	for OTA_URL in $URL; do
-		if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
-			rm "$PROJECT_DIR/catalog.xml"
-		fi
-		if [[ "$NO_SSL" == YES ]]; then
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-				curl -k -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+	while(true); do
+		if [[ ! "$SHOW_URL_ONLY" == YES ]]; then
+			if [[ "$SEARCH_LOOP" == YES ]]; then
+				echo "Searching..."
 			else
-				curl -k -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-			fi
-		else
-			if [[ "$VERBOSE" == YES ]]; then
-				echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-				curl -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
-			else
-				curl -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+				echo "Searching... (will take a long time)"
 			fi
 		fi
-		if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
-			echo "ERROR : Failed to download."
-			quitTool 1
+		if [[ "$OTA_PROFILE" == DEVELOPER ]]; then
+			URL="$DB_OTA"
+		elif [[ "$OTA_PROFILE" == PUBLIC ]]; then
+			URL="$PB_OTA"
+		elif [[ "$OTA_PROFILE" == GM ]]; then
+			URL="$GM_OTA"
+		elif [[ "$OTA_PROFILE" == MOBILE_CONFIG ]]; then
+			URL="$MOBILE_CONFIG_OTA" 
+		elif [[ "$OTA_PROFILE" == CUSTOM ]]; then
+			URL="$CUSTOM_OTA"
 		fi
-		parseAsset
-		if [[ ! -z "$DOWNLOAD_FIRMWARE_URL" ]]; then
-			BUILD_NUMBER="$(echo "$BUILD_NUMBER_VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
-			BUILD_NAME="$(echo "$BUILD_NAME_VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
-			break
-		fi
-	done
-	if [[ -z "$DOWNLOAD_FIRMWARE_URL" ]]; then
-		if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
-			echo "$MODEL-$VERSION (pre: $PREREQUISITE_BUILD) not found."
-		else
-			echo "$MODEL-$VERSION not found."
-		fi
-		#echo "$COUNT" "$PASS_ONCE_0" "$PASS_ONCE_1" "$PASS_ONCE_2" "$PASS_ONCE_3" "$PASS_ONCE_4" "$PASS_ONCE_5" "$PASS_ONCE_6" "$PASS_ONCE_7" "$PASS_ONCE_8" "$PASS_ONCE_9" "$BUILD_NAME_VALUE" "$BUILD_NUMBER_VALUE"
-		quitTool 1
-	else
 		for OTA_URL in $URL; do
-			if [[ -f "$PROJECT_DIR/documentation.xml" ]]; then
-				rm "$PROJECT_DIR/documentation.xml"
+			if [[ -f "$PROJECT_DIR/catalog.xml" ]]; then
+				rm "$PROJECT_DIR/catalog.xml"
 			fi
 			if [[ "$NO_SSL" == YES ]]; then
 				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
-					curl -k -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+					curl -k -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 				else
-					curl -k -s -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					curl -k -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 				fi
 			else
 				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
-					curl -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+					curl -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 				else
-					curl -s -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					curl -s -o "$PROJECT_DIR/catalog.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 				fi
 			fi
-			if [[ -f "$PROJECT_DIR/documentation.xml" ]]; then
-				parseDocumentation
-				if [[ ! -z "$DOWNLOAD_DOCUMENTATION_URL" ]]; then
-					break
-				fi
+			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
+				echo "ERROR : Failed to download."
+				quitTool 1
+			fi
+			parseAsset
+			if [[ ! -z "$DOWNLOAD_FIRMWARE_URL" ]]; then
+				BUILD_NUMBER="$(echo "$BUILD_NUMBER_VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+				BUILD_NAME="$(echo "$BUILD_NAME_VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+				FINAL_OTA_URL="$OTA_URL"
+				break
 			fi
 		done
-	fi
+		if [[ -z "$DOWNLOAD_FIRMWARE_URL" ]]; then
+			if [[ "$SEARCH_DELTA_UPDATE" == YES ]]; then
+				echo "$MODEL-$VERSION (pre: $PREREQUISITE_BUILD) is not found."
+			else
+				echo "$MODEL-$VERSION is not found."
+			fi
+			if [[ ! "$SEARCH_LOOP" == YES ]]; then
+				quitTool 1
+			fi
+		else
+			for OTA_URL in $URL; do
+				if [[ -f "$PROJECT_DIR/documentation.xml" ]]; then
+					rm "$PROJECT_DIR/documentation.xml"
+				fi
+				if [[ "$NO_SSL" == YES ]]; then
+					if [[ "$VERBOSE" == YES ]]; then
+						echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+						curl -k -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					else
+						curl -k -s -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					fi
+				else
+					if [[ "$VERBOSE" == YES ]]; then
+						echo "Downloading $OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+						curl -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					else
+						curl -s -o "$PROJECT_DIR/documentation.xml" "$OTA_URL/com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
+					fi
+				fi
+				if [[ -f "$PROJECT_DIR/documentation.xml" ]]; then
+					parseDocumentation
+					if [[ ! -z "$DOWNLOAD_DOCUMENTATION_URL" ]]; then
+						break
+					fi
+				fi
+			done
+			break
+		fi
+	done
 }
 
 function parseMobileConfig(){
 	VALUE=
-	CUSTOM_OTA=
+	MOBILE_CONFIG_OTA=
 	PASS_ONCE_0=NO
 	for VALUE in $(strings $PATH_MOBILECONFIG); do
 		if [[ "$VERBOSE" == YES ]]; then
 			echo "$VALUE"
 		fi
 		if [[ "$PASS_ONCE_0" == YES ]]; then
-			CUSTOM_OTA="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
+			MOBILE_CONFIG_OTA="$(echo "$VALUE" | cut -d">" -f2 | cut -d"<" -f1)"
 			PASS_ONCE_0=NO
 			break
 		fi
@@ -600,7 +678,7 @@ function parseMobileConfig(){
 		fi
 	done
 	if [[ "$VERBOSE" == YES ]]; then
-		echo "CUSTOM_OTA=$CUSTOM_OTA"
+		echo "MOBILE_CONFIG_OTA=$MOBILE_CONFIG_OTA"
 	fi
 }
 
@@ -888,8 +966,8 @@ function showSummary(){
 		else
 			echo "Update type: Full"
 		fi
-		if [[ "$OTA_PROFILE" == CUSTOM ]]; then
-			echo "Update Asset: $CUSTOM_OTA"
+		if [[ "$OTA_PROFILE" == CUSTOM || "$OTA_PROFILE" == MOBILE_CONFIG ]]; then
+			echo "Update Asset: $FINAL_OTA_URL"
 		fi
 		echo "Update URL: $DOWNLOAD_FIRMWARE_URL"
 		if [[ ! -z "$DOWNLOAD_DOCUMENTATION_URL" ]]; then
