@@ -67,7 +67,7 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 	SUMMARY (darksun-XX)
 	-----------------------------------------------
 	Device name: iPod7,1
-	Version: 10.3.3 (iOS1033GM)
+	Version: 10.3.3
 	Build: 14G60
 	Internal build name: iOS1033GM
 	Public build name: iOS 10.3.3
