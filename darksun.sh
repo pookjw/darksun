@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
 http://mesu.apple.com/assets/tvOS11PublicSeed"
-TOOL_VERSION=49
+TOOL_VERSION=50
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -237,13 +237,15 @@ function setOption(){
 			showHelpMessage
 		fi
 	fi
-	OUTPUT_DIRECTORY="$(pwd)"
-	if [[ ! -d "$OUTPUT_DIRECTORY" ]]; then
-		if [[ "$INTERFACE_MODE" == YES ]]; then
-			OUTPUT_DIRECTORY=
-		else
-			echo "$OUTPUT_DIRECTORY: No such file or directory"
-			quitTool 1
+	if [[ ! "$SEARCH_ONLY" == YES ]]; then
+		OUTPUT_DIRECTORY="$(pwd)"
+		if [[ ! -d "$OUTPUT_DIRECTORY" ]]; then
+			if [[ "$INTERFACE_MODE" == YES ]]; then
+				OUTPUT_DIRECTORY=
+			else
+				echo "$OUTPUT_DIRECTORY: No such file or directory"
+				quitTool 1
+			fi
 		fi
 	fi
 }
