@@ -33,7 +33,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 # - tvOS 11 Public Beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
 http://mesu.apple.com/assets/tvOS11PublicSeed"
-TOOL_VERSION=53
+TOOL_VERSION=54
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -941,7 +941,7 @@ function parseDocumentation(){
 			unzip -qq -o -d "$PROJECT_DIR/documentation" "$PROJECT_DIR/documentation.zip"
 		fi
 		if [[ -f "$PROJECT_DIR/documentation/AssetData/en.lproj/documentation.strings" ]]; then
-			DOCUMENTATION_NAME="$(strings "$PROJECT_DIR/documentation/AssetData/en.lproj/documentation.strings" | grep "$VERSION" | cut -d"Z" -f2 | cut -d"Y" -f2)"
+			DOCUMENTATION_NAME="$(strings "$PROJECT_DIR/documentation/AssetData/en.lproj/documentation.strings" | grep "$VERSION" | cut -d"Z" -f2 | cut -d"Y" -f2 | cut -d"X" -f2)"
 			if [[ -z "$DOCUMENTATION_NAME" ]]; then
 				DOCUMENTATION_NAME="$(strings "$PROJECT_DIR/documentation/AssetData/en.lproj/documentation.strings" | grep HomePod)" 
 			fi
