@@ -30,7 +30,7 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 	-d			get Developer beta Firmware (default: GM only)
 	-p			get Public beta Firmware (default: GM only)
 	-m [mobileconfig]	get Firmware from OTA Profile(.mobileconfig) (default: GM only)
-	-c [url]		get Firmware from custom assets URL
+	-c [url]		get Firmware from custom assets URL (default: GM only)
 	-i			run interface mode
 	-s			search only
 	-u			only show update URL on summary

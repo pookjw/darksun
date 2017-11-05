@@ -1,7 +1,7 @@
 #!/bin/sh
 # darksun
 # Idea by http://newosxbook.com/articles/OTA3.html
-TOOL_VERSION=58
+TOOL_VERSION=59
 
 # GM_OTA
 # - iOS GM Seed
@@ -46,7 +46,7 @@ function showHelpMessage(){
 	echo "-d			get Developer beta Firmware (default: GM only)"
 	echo "-p			get Public beta Firmware (default: GM only)"
 	echo "-m [mobileconfig]	get Firmware from OTA Profile(.mobileconfig) (default: GM only)"
-	echo "-c [url]		get Firmware from custom assets URL"
+	echo "-c [url]		get Firmware from custom assets URL (default: GM only)"
 	echo "-i			run interface mode"
 	echo "-s			search only"
 	echo "-u			only show update URL on summary"
