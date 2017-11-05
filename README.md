@@ -61,9 +61,15 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 
 	$ ./darksun.sh -n iPod7,1 -v 11.2 -m [mobileconfig]
 
-▼ get iPod7,1_11.2 file system from assets url ([See assets url list](https://www.theiphonewiki.com/wiki/OTA_Updates#OTA_updates_list))
+▼ get iPod7,1_11.2 file system from assets url ([See assets url list](https://www.theiphonewiki.com/wiki/OTA_Updates#External_links))
 
 	$ ./darksun.sh -n iPod7,1 -v 11.2 -c [url]
+
+If you want iOS 11 Developer Beta, enter this.
+
+	$ ./darksun.sh -n iPod7,1 -v 11.2 -c https://mesu.apple.com/assets/iOS11DeveloperSeed
+
+But this url is embeded in the latest darksun. So you don't need to use `-c` option instead of `-d` to get iOS 11 Developer Beta Firmware. This is just one example of getting Firmware from custom assets url.
 
 ▼ search only
 	
