@@ -65,7 +65,7 @@ exception: iPhone3,1 OSVersion=7.1.2 PrerequisiteBuild=11D201 (7.1.1) is not sup
 
 	$ ./darksun.sh -n iPod7,1 -v 11.2 -c [url]
 
-If you want iOS 11 Developer Beta, enter this.
+If you want iOS 11(.2) Developer Beta, enter this.
 
 	$ ./darksun.sh -n iPod7,1 -v 11.2 -c https://mesu.apple.com/assets/iOS11DeveloperSeed
 
