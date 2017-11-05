@@ -1,17 +1,18 @@
 #!/bin/sh
 # darksun
 # Idea by http://newosxbook.com/articles/OTA3.html
+TOOL_VERSION=58
 
 # GM_OTA
 # - iOS GM Seed
 # - watchOS GM Seed
 # - tvOS GM Seed
 # - iOS (HomePod) GM Seed
-# - iOS 10 Public Beta Seed (But now GM)
-# - iOS 9 Public Beta Seed (But now GM)
-# - iOS 8 Public Beta Seed (But now GM)
-# - watchOS 3 Developer Beta Seed (But now GM)
-# - tvOS 10 Developer Beta Seed (But now GM)
+# - iOS 10 Public beta Seed (But now GM)
+# - iOS 9 Public beta Seed (But now GM)
+# - iOS 8 Public beta Seed (But now GM)
+# - watchOS 3 Developer beta Seed (But now GM)
+# - tvOS 10 Developer beta Seed (But now GM)
 GM_OTA="https://mesu.apple.com/assets
 https://mesu.apple.com/assets/watch
 http://mesu.apple.com/assets/tv
@@ -22,19 +23,18 @@ https://mesu.apple.com/assets/seed-R40.2112
 https://mesu.apple.com/assets/watchOSDeveloperSeed
 http://mesu.apple.com/assets/tvOSDeveloperSeed"
 # DB_OTA
-# - iOS 11 Developer Beta Seed
-# - watchOS 4 Developer Beta Seed
-# - tvOS 11 Developer Beta Seed
+# - iOS 11 Developer beta Seed
+# - watchOS 4 Developer beta Seed
+# - tvOS 11 Developer beta Seed
 DB_OTA="https://mesu.apple.com/assets/iOS11DeveloperSeed
 https://mesu.apple.com/assets/watchOS4DeveloperSeed
 http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 # PB_OTA
-# - iOS 11 Public Beta Seed
-# - tvOS 11 Public Beta Seed
+# - iOS 11 Public beta Seed
+# - tvOS 11 Public beta Seed
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
 http://mesu.apple.com/assets/tvOS11PublicSeed"
 DOCUMENTATION_NAME_FILTER_LIST="X Y Z"
-TOOL_VERSION=57
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -43,8 +43,8 @@ function showHelpMessage(){
 	echo "-n [name]		device identifier (see https://www.theiphonewiki.com/wiki/Models)"
 	echo "-v [version]		system version"
 	echo "-e [prerequisite]	get Short update file (default: Full)"
-	echo "-d			get Developer Beta Firmware (default: GM only)"
-	echo "-p			get Public Beta Firmware (default: GM only)"
+	echo "-d			get Developer beta Firmware (default: GM only)"
+	echo "-p			get Public beta Firmware (default: GM only)"
 	echo "-m [mobileconfig]	get Firmware from OTA Profile(.mobileconfig) (default: GM only)"
 	echo "-c [url]		get Firmware from custom assets URL"
 	echo "-i			run interface mode"
@@ -334,9 +334,9 @@ function showInterface(){
 		if [[ -z "$OTA_PROFILE" ]]; then
 			echo "(4) profile: (undefined)"
 		elif [[ "$OTA_PROFILE" == DEVELOPER ]]; then
-			echo "(4) profile: Developer Beta"
+			echo "(4) profile: Developer beta"
 		elif [[ "$OTA_PROFILE" == PUBLIC ]]; then
-			echo "(4) profile: Public Beta"
+			echo "(4) profile: Public beta"
 		elif [[ "$OTA_PROFILE" == CUSTOM ]]; then
 			echo "(4) profile: Custom ($CUSTOM_OTA)"
 		elif [[ "$OTA_PROFILE" == MOBILE_CONFIG ]]; then
@@ -382,8 +382,8 @@ function showInterface(){
 				showTitleBar
 				showLines "-"
 				echo "(1) GM"
-				echo "(2) Developer Beta"
-				echo "(3) Public Beta"
+				echo "(2) Developer beta"
+				echo "(3) Public beta"
 				echo "(4) OTA Profile"
 				echo "(5) Custom"
 				showLines "-"
