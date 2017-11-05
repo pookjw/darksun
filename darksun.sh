@@ -34,7 +34,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
 http://mesu.apple.com/assets/tvOS11PublicSeed"
 DOCUMENTATION_NAME_FILTER_LIST="X Y Z"
-TOOL_VERSION=56
+TOOL_VERSION=57
 
 function showHelpMessage(){
 	echo "darksun: get whole file system (Version: $TOOL_VERSION)"
@@ -333,10 +333,14 @@ function showInterface(){
 		fi
 		if [[ -z "$OTA_PROFILE" ]]; then
 			echo "(4) profile: (undefined)"
+		elif [[ "$OTA_PROFILE" == DEVELOPER ]]; then
+			echo "(4) profile: Developer Beta"
+		elif [[ "$OTA_PROFILE" == PUBLIC ]]; then
+			echo "(4) profile: Public Beta"
 		elif [[ "$OTA_PROFILE" == CUSTOM ]]; then
-			echo "(4) profile: CUSTOM ($CUSTOM_OTA)"
+			echo "(4) profile: Custom ($CUSTOM_OTA)"
 		elif [[ "$OTA_PROFILE" == MOBILE_CONFIG ]]; then
-			echo "(4) profile: MOBILE_CONFIG ($MOBILE_CONFIG_OTA)"
+			echo "(4) profile: OTA Profile ($MOBILE_CONFIG_OTA)"
 		else
 			echo "(4) profile: $OTA_PROFILE"
 		fi
@@ -378,10 +382,10 @@ function showInterface(){
 				showTitleBar
 				showLines "-"
 				echo "(1) GM"
-				echo "(2) DEVELOPER"
-				echo "(3) PUBLIC"
-				echo "(4) MOBILE_CONFIG"
-				echo "(5) CUSTOM"
+				echo "(2) Developer Beta"
+				echo "(3) Public Beta"
+				echo "(4) OTA Profile"
+				echo "(5) Custom"
 				showLines "-"
 				echo "Available commands: 1~4, break, exit"
 				showLines "*"
