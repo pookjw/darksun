@@ -1,7 +1,7 @@
 #!/bin/sh
 # darksun
 # Idea by http://newosxbook.com/articles/OTA3.html
-TOOL_VERSION=60
+TOOL_VERSION=61
 
 # GM_OTA
 # - iOS GM Seed
@@ -35,7 +35,7 @@ http://mesu.apple.com/assets/tvOS11DeveloperSeed"
 PB_OTA="https://mesu.apple.com/assets/iOS11PublicSeed
 http://mesu.apple.com/assets/tvOS11PublicSeed"
 # Assets URL
-ASSETS_RELATIVE_URL="com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
+ASSETS_RELATIVE_PATH="com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml"
 # Documentation URL
 DOCUMENTATION_RELATIVE_PATH="com_apple_MobileAsset_SoftwareUpdateDocumentation/com_apple_MobileAsset_SoftwareUpdateDocumentation.xml"
 DOCUMENTATION_RELATIVE_PATH_WATCH="com_apple_MobileAsset_WatchSoftwareUpdateDocumentation/com_apple_MobileAsset_WatchSoftwareUpdateDocumentation.xml"
@@ -609,17 +609,17 @@ function searchDownloadURL(){
 			fi
 			if [[ "$NO_SSL" == YES ]]; then
 				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $URL/$ASSETS_RELATIVE_URL"
-					curl -k -o "$PROJECT_DIR/catalog.xml" "$URL/$ASSETS_RELATIVE_URL"
+					echo "Downloading $URL/$ASSETS_RELATIVE_PATH"
+					curl -k -o "$PROJECT_DIR/catalog.xml" "$URL/$ASSETS_RELATIVE_PATH"
 				else
-					curl -k -s -o "$PROJECT_DIR/catalog.xml" "$URL/$ASSETS_RELATIVE_URL"
+					curl -k -s -o "$PROJECT_DIR/catalog.xml" "$URL/$ASSETS_RELATIVE_PATH"
 				fi
 			else
 				if [[ "$VERBOSE" == YES ]]; then
-					echo "Downloading $URL/$ASSETS_RELATIVE_URL"
-					curl -o "$PROJECT_DIR/catalog.xml" "$URL/$ASSETS_RELATIVE_URL"
+					echo "Downloading $URL/$ASSETS_RELATIVE_PATH"
+					curl -o "$PROJECT_DIR/catalog.xml" "$URL/$ASSETS_RELATIVE_PATH"
 				else
-					curl -s -o "$PROJECT_DIR/catalog.xml" "$URL/$ASSETS_RELATIVE_URL"
+					curl -s -o "$PROJECT_DIR/catalog.xml" "$URL/$ASSETS_RELATIVE_PATH"
 				fi
 			fi
 			if [[ ! -f "$PROJECT_DIR/catalog.xml" ]]; then
