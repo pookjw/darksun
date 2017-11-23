@@ -1,7 +1,7 @@
 #!/bin/sh
 # darksun
 # Idea by http://newosxbook.com/articles/OTA3.html
-TOOL_VERSION=61
+TOOL_VERSION=62
 
 # GM_OTA
 # - iOS GM Seed
@@ -582,9 +582,9 @@ function searchDownloadURL(){
 	while(true); do
 		if [[ ! "$SHOW_URL_ONLY" == YES ]]; then
 			if [[ "$SEARCH_LOOP" == YES ]]; then
-				echo "Searching..."
+				echo "Searching for data... (loop)"
 			else
-				echo "Searching... (will take a long time)"
+				echo "Searching for data... (will take a long time)"
 			fi
 		fi
 		if [[ "$OTA_PROFILE" == GM ]]; then
