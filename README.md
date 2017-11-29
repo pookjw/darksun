@@ -4,7 +4,7 @@
 
 get whole file system
 
-Tested on macOS. Happy reversing. :D
+Tested on macOS. Requires xz. Install it from brew. Happy reversing. :D
 
 ## Compatiblity
 
