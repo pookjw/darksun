@@ -6,7 +6,7 @@ get whole file system
 
 Tested on macOS. Requires xz. Install it from brew. Happy reversing. :D
 
-**This project was discontinued.** I'm rewriting the script named [lightsun](https://github.com/pookjw/lightsun), iclu. parsing macOS catalog feature. darksun won't receive additional feature.
+**This project was discontinued.** I'm rewriting the script named [lightsun](https://github.com/pookjw/lightsun), iclu. parsing macOS catalog feature. [lightsun](https://github.com/pookjw/lightsun) is not stable yet so not recommend to use this. Anyway, So darksun won't receive additional feature.
 
 ## Compatiblity
 
