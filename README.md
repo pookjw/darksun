@@ -6,6 +6,8 @@ get whole file system
 
 Tested on macOS. Requires xz. Install it from brew. Happy reversing. :D
 
+This project was discontinued. I'm rewriting the script named [lightsun](https://github.com/pookjw/lightsun), iclu. parsing macOS catalog feature. darksun won't receive additional feature.
+
 ## Compatiblity
 
 Only works with signed OTA version like iOS 6.1.3, 7.1.2, 8.4.1, 9.3.5, 10.3.3, etc...
